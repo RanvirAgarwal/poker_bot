@@ -111,3 +111,4 @@ def test_deepest_legal_observation_stress():
     chosen = policy.choose_action(obs, memory)
     assert chosen in obs.legal_actions
     assert chosen in (Action.CHECK_CALL, Action.FOLD)
+

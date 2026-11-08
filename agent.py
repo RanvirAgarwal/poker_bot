@@ -188,5 +188,5 @@ async def route_hand_end(request: Request):
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", "5008"))
-    uvicorn.run(app, host="0.0.0.0", port=port, log_level="info", access_log=False)
+    uvicorn.run(app, host="0.0.0.0", port=port, log_level="warning", access_log=False)
 

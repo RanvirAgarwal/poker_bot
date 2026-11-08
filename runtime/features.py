@@ -86,6 +86,31 @@ def hand_strength(hole: Sequence[int], board: Sequence[int]) -> float:
     return (wins + 0.5 * ties) / total
 
 
+def precompute_board_masks(board: Sequence[int]) -> tuple[int, ...]:
+    """Precompute 3-card board bitmasks for fast Omaha evaluation."""
+    b_bits = [1 << c for c in board]
+    combos = combinations(range(len(board)), 3)
+    return tuple(b_bits[i] | b_bits[j] | b_bits[k] for i, j, k in combos)
+
+
+def omaha_score_fast(hole: Sequence[int], board_masks: Sequence[int], table: dict) -> int:
+    """Fast score using precomputed board masks and direct bit-shifts."""
+    hb0, hb1, hb2, hb3, hb4 = 1 << hole[0], 1 << hole[1], 1 << hole[2], 1 << hole[3], 1 << hole[4]
+    h_masks = (
+        hb0 | hb1, hb0 | hb2, hb0 | hb3, hb0 | hb4,
+        hb1 | hb2, hb1 | hb3, hb1 | hb4,
+        hb2 | hb3, hb2 | hb4,
+        hb3 | hb4,
+    )
+    best = 0
+    for hm in h_masks:
+        for bm in board_masks:
+            score = table[hm | bm]
+            if score > best:
+                best = score
+    return best
+
+
 def omaha_best_score(hole: Sequence[int], board: Sequence[int]) -> int:
     """Best score using EXACTLY 2 of 5 hole cards and EXACTLY 3 board cards.
 
@@ -94,19 +119,8 @@ def omaha_best_score(hole: Sequence[int], board: Sequence[int]) -> int:
     if len(hole) != 5 or len(board) < 3:
         raise ValueError("Need 5 hole cards and at least 3 board cards")
     table = get_table()
-    hole_bits = [1 << c for c in hole]
-    board_bits = [1 << c for c in board]
-    hole_masks = [hole_bits[i] | hole_bits[j] for i, j in _PAIRS]
-    board_combos = tuple(combinations(range(len(board)), 3))
-    board_masks = [board_bits[i] | board_bits[j] | board_bits[k] for i, j, k in board_combos]
-
-    best = 0
-    for hm in hole_masks:
-        for bm in board_masks:
-            score = table[hm | bm]
-            if score > best:
-                best = score
-    return best
+    board_masks = precompute_board_masks(board)
+    return omaha_score_fast(hole, board_masks, table)
 
 
 def hand_strength_sampled(hole: Sequence[int], board: Sequence[int],

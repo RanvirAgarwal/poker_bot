@@ -14,24 +14,31 @@ from __future__ import annotations
 import sys
 import os
 import random
+import time
 from typing import Sequence, Tuple, List, Dict
 
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT_DIR, "starter"))
 sys.path.insert(0, ROOT_DIR)
 
-from evaluator import NUM_CARDS, category_of
+from evaluator import NUM_CARDS, category_of, get_table
 from game import Action, Observation, Street
-from runtime.features import omaha_best_score, preflop_hand_quality
+from runtime.features import (
+    omaha_best_score,
+    omaha_score_fast,
+    precompute_board_masks,
+    preflop_hand_quality,
+)
 
 
 class RangeAwarePolicy:
     """Action-Conditioned Range Policy (RangeAware_v2)."""
 
-    def __init__(self, aggression: float = 1.0, seed: int = 42, use_continuation_filter: bool = True):
+    def __init__(self, aggression: float = 1.0, seed: int = 42, use_continuation_filter: bool = True, num_samples: int = 30):
         self.aggression = aggression
         self.rng = random.Random(seed)
         self.use_continuation_filter = use_continuation_filter
+        self.num_samples = num_samples
 
     def _update_memory_opp_stats(self, obs: Observation, memory: dict) -> Tuple[float, float]:
         """Update and return (preflop_raise_rate, postflop_raise_rate) from memory.
@@ -118,16 +125,17 @@ class RangeAwarePolicy:
             return adj_q, adj_q
 
         # Postflop: Sample candidate opponent hands and calculate likelihood weights
-        my_score = omaha_best_score(hole, board)
+        table = get_table()
+        board_masks = precompute_board_masks(board)
+        my_score = omaha_score_fast(hole, board_masks, table)
 
         candidate_weights = []
         candidate_scores = []
 
         # Generate candidates
-        n_draws = num_samples * 2
-        for _ in range(n_draws):
+        for _ in range(num_samples):
             opp_hole = self.rng.sample(remaining, 5)
-            score = omaha_best_score(opp_hole, board)
+            score = omaha_score_fast(opp_hole, board_masks, table)
             cat = score >> 20
             pf_q = preflop_hand_quality(opp_hole)
 
@@ -168,8 +176,6 @@ class RangeAwarePolicy:
 
             candidate_weights.append(max(0.01, w))
             candidate_scores.append(score)
-            if len(candidate_weights) >= num_samples:
-                break
 
         # Compute weighted equity vs current range
         total_w = sum(candidate_weights)
@@ -209,6 +215,7 @@ class RangeAwarePolicy:
         if obs.to_call == 0 and Action.RAISE_HALF not in obs.legal_actions:
             return Action.CHECK_CALL
 
+        t0 = time.perf_counter()
         is_btn = obs.is_button
         street = obs.street
         pot_odds = obs.to_call / max(1, obs.pot + obs.to_call)
@@ -216,20 +223,32 @@ class RangeAwarePolicy:
         # Update street-specific opponent statistics in memory
         pf_rate, post_rate = self._update_memory_opp_stats(obs, memory)
 
+        # Dynamic time budgeting to guarantee 0 bank exhaustion
+        eff_samples = self.num_samples
+        if isinstance(memory, dict):
+            spent = memory.get("_spent_bank", 0.0)
+            if spent > 6.0:
+                eff_samples = min(eff_samples, 10)
+            elif spent > 4.5:
+                eff_samples = min(eff_samples, 18)
+            elif spent > 3.0:
+                eff_samples = min(eff_samples, 24)
+
         # Get range-conditioned equity
         eq_current, eq_continue = self._compute_action_conditioned_equity(
-            obs, pf_raise_rate=pf_rate, post_raise_rate=post_rate
+            obs, pf_raise_rate=pf_rate, post_raise_rate=post_rate, num_samples=eff_samples
         )
 
         if street == Street.PREFLOP:
-            return self._preflop_action(obs, eq_current, is_btn, pot_odds)
+            act = self._preflop_action(obs, eq_current, is_btn, pot_odds)
         else:
-            return self._postflop_action(obs, eq_current, eq_continue, is_btn, pot_odds)
+            act = self._postflop_action(obs, eq_current, eq_continue, is_btn, pot_odds)
 
-        if street == Street.PREFLOP:
-            return self._preflop_action(obs, eq_current, is_btn, pot_odds)
-        else:
-            return self._postflop_action(obs, eq_current, eq_continue, is_btn, pot_odds)
+        if isinstance(memory, dict):
+            elapsed = time.perf_counter() - t0
+            memory["_spent_bank"] = memory.get("_spent_bank", 0.0) + max(0.0, elapsed - 0.0008)
+
+        return act
 
     def _preflop_action(self, obs: Observation, strength: float,
                         is_btn: bool, pot_odds: float) -> Action:

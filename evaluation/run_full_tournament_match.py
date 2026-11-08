@@ -22,7 +22,7 @@ from judge_engine import combine_halves, HalfResult, MatchResult, format_report
 
 
 def run_half_process(
-    agent1_script: str,
+    agent1_target: str,
     agent2_script: str,
     half: int,
     deals: int,
@@ -31,6 +31,7 @@ def run_half_process(
     port1: int = 5008,
     port2: int = 5009,
     opp_bot: str = "calling_station",
+    use_container: bool = False,
 ) -> Dict[str, Any]:
     python_exe = sys.executable
 
@@ -40,13 +41,39 @@ def run_half_process(
     env2["PORT"] = str(port2)
     env2["OPPONENT_BOT"] = opp_bot
 
-    print(f"\n[Half {half}] Spawning fresh server processes...")
-    p1 = subprocess.Popen([python_exe, agent1_script], env=env1)
+    container_name = f"poker-agent1-h{half}-{int(time.time())}"
+    p1 = None
+
+    if use_container:
+        print(f"\n[Half {half}] Spawning restricted Docker container ({agent1_target}) on port {port1}...")
+        # Enforce exact tournament container constraints: 1 CPU, 4 GB RAM, read-only FS, 512m tmpfs
+        docker_cmd = [
+            "docker", "run", "-d",
+            "--name", container_name,
+            "-p", f"{port1}:{port1}",
+            "--read-only",
+            "--tmpfs", "/tmp:rw,nosuid,nodev,size=512m",
+            "--cap-drop", "ALL",
+            "--security-opt", "no-new-privileges",
+            "--pids-limit", "256",
+            "--cpus", "1",
+            "--memory", "4g",
+            "-e", f"PORT={port1}",
+            agent1_target,
+        ]
+        res_d = subprocess.run(docker_cmd, capture_output=True, text=True)
+        if res_d.returncode != 0:
+            raise RuntimeError(f"Failed to start container {agent1_target}: {res_d.stderr}")
+    else:
+        print(f"\n[Half {half}] Spawning fresh server process ({agent1_target})...")
+        p1 = subprocess.Popen([python_exe, agent1_target], env=env1)
+
+    print(f"[Half {half}] Spawning opponent server process ({agent2_script}, bot={opp_bot})...")
     p2 = subprocess.Popen([python_exe, agent2_script], env=env2)
 
     try:
         # Give servers a moment to bind and warmup
-        time.sleep(1.5)
+        time.sleep(2.0)
 
         cmd = [
             python_exe,
@@ -71,14 +98,25 @@ def run_half_process(
             return json.load(f)
 
     finally:
-        print(f"[Half {half}] Terminating server processes...")
-        for p in (p1, p2):
+        print(f"[Half {half}] Terminating processes / containers...")
+        if use_container:
+            subprocess.run(["docker", "rm", "-f", container_name], capture_output=True)
+        elif p1:
             try:
-                p.terminate()
-                p.wait(timeout=2)
+                p1.terminate()
+                p1.wait(timeout=2)
             except Exception:
                 try:
-                    p.kill()
+                    p1.kill()
+                except Exception:
+                    pass
+        if p2:
+            try:
+                p2.terminate()
+                p2.wait(timeout=2)
+            except Exception:
+                try:
+                    p2.kill()
                 except Exception:
                     pass
         time.sleep(0.5)
@@ -91,6 +129,7 @@ def run_full_duplicate_match(
     seed: str = "tournament_seed_1",
     output_dir: str = "reports/raw_matches",
     opp_bot: str = "calling_station",
+    use_container: bool = False,
 ) -> MatchResult:
     os.makedirs(output_dir, exist_ok=True)
     h1_json = os.path.join(output_dir, f"{seed}_half1.json")
@@ -99,13 +138,13 @@ def run_full_duplicate_match(
 
     print("=" * 75)
     print(f"OFFICIAL TOURNAMENT MATCH: {deals} deals duplicate (2,000 hands total)")
-    print(f"Agent 1: {agent1_script}")
+    print(f"Agent 1: {agent1_script} (Container: {use_container})")
     print(f"Agent 2: {agent2_script} (bot: {opp_bot})")
     print(f"Seed: {seed}")
     print("=" * 75)
 
-    data1 = run_half_process(agent1_script, agent2_script, 1, deals, seed, h1_json, opp_bot=opp_bot)
-    data2 = run_half_process(agent1_script, agent2_script, 2, deals, seed, h2_json, opp_bot=opp_bot)
+    data1 = run_half_process(agent1_script, agent2_script, 1, deals, seed, h1_json, opp_bot=opp_bot, use_container=use_container)
+    data2 = run_half_process(agent1_script, agent2_script, 2, deals, seed, h2_json, opp_bot=opp_bot, use_container=use_container)
 
     half1 = HalfResult.from_dict(data1)
     half2 = HalfResult.from_dict(data2)
@@ -130,9 +169,18 @@ if __name__ == "__main__":
     parser.add_argument("--seed", default="seed_1")
     parser.add_argument("--outdir", default="reports/raw_matches")
     parser.add_argument("--opp-bot", default="calling_station")
+    parser.add_argument("--container", action="store_true", help="Run agent1 inside restricted Docker container")
+    parser.add_argument("--container-image", default="poker-agent-check:latest")
     args = parser.parse_args()
 
-    a1 = os.path.abspath(args.agent1)
+    a1 = args.container_image if args.container else os.path.abspath(args.agent1)
     a2 = os.path.abspath(args.agent2)
-    run_full_duplicate_match(a1, a2, deals=args.deals, seed=args.seed, output_dir=args.outdir, opp_bot=args.opp_bot)
+    run_full_duplicate_match(
+        a1, a2,
+        deals=args.deals,
+        seed=args.seed,
+        output_dir=args.outdir,
+        opp_bot=args.opp_bot,
+        use_container=args.container,
+    )
 

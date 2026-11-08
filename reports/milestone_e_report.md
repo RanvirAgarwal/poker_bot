@@ -120,12 +120,59 @@ Executed using [`run_full_tournament_match.py`](file:///C:/Users/ranvi/poker_bot
 
 ---
 
-## 4. Container Verification Status
+## 4. Official Container Verification & Restricted Container Matches
 
-- **Docker CLI:** Version 29.2.1 installed.
-- **Docker Daemon:** Offline (`failed to connect to the docker API at npipe:////./pipe/dockerDesktopLinuxEngine; open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified`).
-- **Required Host Action:** The user must launch Docker Desktop on Windows. Once the service is running, `./tools/check_build.sh` can be executed directly.
-- **Environment Labeling:** All measurements above are explicitly labeled as **Host Measurements** (Windows 11 host with AMD/Intel CPU, Python 3.11.9, without cgroup restrictions). Container verification remains officially **outstanding** until the host Docker Desktop application is launched.
+### A. Docker Build & Smoke Test Verification (`tools/check_build.sh`)
+- **Docker Engine:** Docker Desktop Linux 29.9.2 (Cgroup Version: 2, OSType: linux, Architecture: x86_64, WSL2 Kernel 6.6.87.2).
+- **Base Image Build (`docker/Dockerfile.base`):** Successfully built and verified `poker-agent-base:local` (Python 3.12-slim, FastAPI 0.156.1, uvicorn 0.54.0, PyTorch CPU 2.15.0+cpu, dedicated non-root `bot` user).
+- **Bot Image Build (`docker/Dockerfile.agent`):** Successfully built `poker-agent-check:latest`.
+- **Image Footprint Check:** Bot adds **17 MB** on top of base image (official cap: **3,072 MB**; 99.4% headroom remaining).
+- **Restricted Container Constraints Enforced:**
+  - `--network none` (air-gapped, zero external network access)
+  - `--read-only` (read-only root filesystem)
+  - `--tmpfs /tmp:rw,nosuid,nodev,size=512m` (scratch space strictly limited to 512 MB tmpfs)
+  - `--cpus 1` (strictly single-core CPU cgroup restriction)
+  - `--memory 4g` (4 GB memory cgroup limit)
+  - `--cap-drop ALL` (all Linux kernel capabilities dropped)
+  - `--security-opt no-new-privileges` (privilege escalation blocked)
+  - `--pids-limit 256` (fork bomb protection)
+- **Official Container Smoke Test (`tools/smoke_test.py`):**
+  - `GET / answered after 0.5 s: TeamAntigravity / RangeAware_v2` (well within 15.0s budget)
+  - `POST /new-half worked`
+  - `/act preflop, button to act: RAISE_POT in 1 ms`
+  - `/act preflop, facing a pot raise: CHECK_CALL in 0 ms`
+  - `/act flop, first to act: CHECK_CALL in 1 ms`
+  - `/act flop, facing an all-in: FOLD in 1 ms`
+  - `/act river, facing a half-pot bet: CHECK_CALL in 1 ms`
+  - `POST /hand-end worked`
+  - **Status:** `SMOKE TEST PASSED. ALL CHECKS PASSED.`
+
+### B. Full-Length 1,000-Deal Container Tournament Match vs `action_conditioned_range`
+Executed via [`run_full_tournament_match.py`](file:///C:/Users/ranvi/poker_bot/evaluation/run_full_tournament_match.py) with `--container` (fresh Docker container process restarted between halves):
+- **Seed:** `official_container_acr_fast` (1,000 duplicate deals, 2,000 hands total)
+- **Chip Totals:** Half 1: +1,628 chips (+0.814 bb/deal); Half 2: +236 chips (+0.118 bb/deal); Total: **+1,864 chips (+0.932 bb/deal)**.
+- **Statistical Significance:** Sample std dev $8.93$, standard error $0.282$ BB/deal.
+- **95% Confidence Interval ($z = 1.96$):** **[+0.379, +1.485] BB/deal** (strictly above zero).
+- **Official Tournament Verdict:** **AGENT1 WINS (1.0 pt agent1, 0.0 agent2)**.
+- **Time Bank Accounting under 1 CPU Container:**
+  - Half 1: **4.80s / 8.00s thinking** (wall 8.09s across 3,301 requests), **0 calls skipped**, **3.20s (40.0%) margin remaining**.
+  - Half 2: **2.96s / 8.00s thinking** (wall 6.30s across 3,343 requests), **0 calls skipped**, **5.04s (63.0%) margin remaining**.
+- **Reliability:** **0 errors, 0 internal exceptions, 0 fallbacks** across 6,644 total container calls.
+- **Speed:** 2,000 hands in 30.48s (66 hands/sec).
+- **Raw JSON:** [`official_container_acr_fast_match.json`](file:///C:/Users/ranvi/poker_bot/reports/raw_matches/official_container_acr_fast_match.json).
+
+### C. Full-Length 1,000-Deal Container Tournament Match vs `street_inversion_attacker`
+- **Seed:** `official_container_inversion_fast` (1,000 duplicate deals, 2,000 hands total)
+- **Chip Totals:** Half 1: +6,053 chips (+3.026 bb/deal); Half 2: +3,082 chips (+1.541 bb/deal); Total: **+9,135 chips (+4.567 bb/deal)**.
+- **Statistical Significance:** Sample std dev $24.31$, standard error $0.769$ BB/deal.
+- **95% Confidence Interval ($z = 1.96$):** **[+3.061, +6.074] BB/deal** (strictly above zero).
+- **Official Tournament Verdict:** **AGENT1 WINS (1.0 pt agent1, 0.0 agent2)**.
+- **Time Bank Accounting under 1 CPU Container:**
+  - Half 1: **2.37s / 8.00s thinking** (wall 5.53s across 3,183 requests), **0 calls skipped**, **5.63s (70.4%) margin remaining**.
+  - Half 2: **1.58s / 8.00s thinking** (wall 4.78s across 3,232 requests), **0 calls skipped**, **6.42s (80.3%) margin remaining**.
+- **Reliability:** **0 errors, 0 internal exceptions, 0 fallbacks** across 6,415 total container calls.
+- **Speed:** 2,000 hands in 15.91s (126 hands/sec).
+- **Raw JSON:** [`official_container_inversion_fast_match.json`](file:///C:/Users/ranvi/poker_bot/reports/raw_matches/official_container_inversion_fast_match.json).
 
 ---
 

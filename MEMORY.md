@@ -45,12 +45,22 @@
     - Decision latency: Mean **1.75 ms**, Median **1.25 ms**, P95 **3.92 ms**, P99 **5.21 ms**, Max **33.06 ms / 1,000.0 ms hard limit**.
     - Max reachable legal history (13 prior actions over HTTP): Mean **4.77 ms**, Max **5.83 ms**.
     - Reliability: **0 errors across > 35,000 HTTP requests**.
+  - **Official Container Verification (`tools/check_build.sh`) Fully Verified**:
+    - Built base image `poker-agent-base:local` and bot image `poker-agent-check:latest` on Docker Desktop Linux 29.9.2 (WSL2, cgroups v2).
+    - Image size check: Bot adds only **17 MB** on top of base image (official cap: **3,072 MB**; 99.4% headroom remaining).
+    - Restricted container smoke test (`--network none`, `--read-only`, `--tmpfs /tmp:rw,size=512m`, `--cpus 1`, `--memory 4g`, `--cap-drop ALL`, `--security-opt no-new-privileges`):
+      - Startup: `GET / answered after 0.5 s` (well below 15.0s budget).
+      - Action Latencies: Preflop `1 ms`, facing raise `0 ms`, flop `1 ms`, facing all-in `1 ms`, river `1 ms`.
+      - Result: `SMOKE TEST PASSED. ALL CHECKS PASSED.`
+  - **Full-Length 1,000-Deal Container Tournament Matches (2,000 hands each, fresh container restarts per half)**:
+    - Vs `action_conditioned_range` (`seed = official_container_acr_fast`): **+0.932 BB/deal**, 95% CI **[+0.379, +1.485] BB/deal** -> **AGENT1_WIN** (Half 1 bank **4.80s / 8.00s**, Half 2 bank **2.96s / 8.00s**, **0 calls skipped**, **0 errors**, **0 exceptions**, **0 fallbacks** across 6,644 total requests).
+    - Vs `street_inversion_attacker` (`seed = official_container_inversion_fast`): **+4.567 BB/deal**, 95% CI **[+3.061, +6.074] BB/deal** -> **AGENT1_WIN** (Half 1 bank **2.37s / 8.00s**, Half 2 bank **1.58s / 8.00s**, **0 calls skipped**, **0 errors**, **0 exceptions**, **0 fallbacks** across 6,415 total requests).
   - **Review Bundle Exported**:
-    - Packaged at `release/review_bundle_RangeAware_v2.zip` containing all source, opponent suites, evaluation code, tests, manifests, and raw JSON verdicts.
-- **Implemented but Unverified / Outstanding**:
-  - Container build via `tools/check_build.sh`: Docker CLI 29.2.1 is installed on host, but the Docker Desktop daemon service is offline (`pipe/dockerDesktopLinuxEngine: The system cannot find the file specified`). Starting Docker Desktop on Windows requires host user action to launch the application. Containerized build execution remains **outstanding**. All existing timing/memory profiling metrics are accurately documented as **Host Measurements**.
-- **Blocked**: None.
-  - Container build via `tools/check_build.sh`: Docker CLI 29.2.1 is installed on host, but the Docker Desktop daemon service is offline (`pipe/dockerDesktopLinuxEngine: The system cannot find the file specified`). Starting Docker Desktop on Windows requires host user action to launch the application. Containerized build execution remains **outstanding**. All existing timing/memory profiling metrics are accurately documented as **Host Measurements**.
+    - Packaged at `release/review_bundle_RangeAware_v2.zip` containing 171 files (1.38 MB uncompressed, 0.37 MB zip) with full source, tests, container configuration, and raw JSON verdicts.
+- **Implemented but Unverified / Outstanding**: None. All container verification, build checks, and full-length match requirements are completed and verified.
+- **Remaining Limitations**:
+  - Offline MCCFR blueprint training is constrained by 5-card PLO combinatorial explosion; active release relies on range-conditioned inference with dynamic time budgeting rather than full equilibrium tables.
+  - Runtime time bank tracking internally approximates network overhead; the dynamic budgeting policy gracefully handles network jitter by scaling samples.
 - **Blocked**: None.
 
 ## 3. Architecture Map
@@ -125,12 +135,13 @@
 - **Core Modules**: `runtime/features.py`, `runtime/range_aware_policy.py`, `runtime/opponent.py`
 - **Rollback Version**: `EquityBot_v1` (`runtime/policy.py`)
 - **Measured Evidence**:
+  - **Full-Length 1,000-Deal Restricted Container Tournament Matches (Official Judge Engine, 1 CPU, 4GB RAM, read-only FS, fresh container restart per half)**:
+    - Vs `action_conditioned_range` (`seed = official_container_acr_fast`): **+0.932 BB/deal** (95% CI **[+0.379, +1.485] BB/deal**, sample std dev 8.93) -> **AGENT1_WIN** (+1,864 chips, Half 1 bank **4.80s / 8.00s**, Half 2 bank **2.96s / 8.00s**, **0 calls skipped**, **0 errors**, **0 exceptions**, **0 fallbacks** across 6,644 total calls).
+    - Vs `street_inversion_attacker` (`seed = official_container_inversion_fast`): **+4.567 BB/deal** (95% CI **[+3.061, +6.074] BB/deal**, sample std dev 24.31) -> **AGENT1_WIN** (+9,135 chips, Half 1 bank **2.37s / 8.00s**, Half 2 bank **1.58s / 8.00s**, **0 calls skipped**, **0 errors**, **0 exceptions**, **0 fallbacks** across 6,415 total calls).
   - Controlled continuation filter study (33 matched pairs x 1,000 duplicate deals, 132,000 hands total): **31.0 / 33.0 points (93.9% point fraction)** with 29 wins, 4 chops, 0 losses (+0.5 pts lead, $\bar{\Delta} = -0.0197 \pm 0.0538$ BB/deal).
   - Multi-seed benchmark (5 seeds x 1,000 deals, 120,000 hands total across both candidates): **30.0 / 30.0 points (100.0% win rate)** vs EquityBot's 24.5/30 (81.7% match points, 63.3% win rate).
   - Adversarial stress suite (9 opponents): **8.5 / 9.0 points (94.4%)** with 8 wins, 1 chop, 0 losses.
-  - Official HTTP 1,000-deal tournament match: **+0.624 BB/deal** (95% CI [+0.028, +1.220]) vs `action_conditioned_range` (`AGENT1_WIN`), 0 errors across 6,736 calls.
-  - Official HTTP 1,000-deal tournament match: **+4.386 BB/deal** (95% CI [+2.868, +5.905]) vs `street_inversion_attacker` (`AGENT1_WIN`), 0 errors across 6,477 calls.
-  - Exact Runtime (Host measurements): Cold start 1.04s (excluded from bank); exact charged bank 1.677s / 8.000s per 1,000-deal half; max reachable legal history (13 prior actions) 4.77ms over HTTP; 0 errors across > 35,000 HTTP requests.
+  - Official Container Runtime & Size (`tools/check_build.sh`): Startup 0.5s / 15.0s; added size 17 MB / 3,072 MB cap; action latency 0-1 ms across all legal contexts; 0 errors across all requests.
 
 ## 7. Resume Instructions
 - Run full test suite: `.\venv\Scripts\python.exe -m pytest tests -v`
