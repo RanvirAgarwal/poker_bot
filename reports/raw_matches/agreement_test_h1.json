@@ -7,8 +7,8 @@
   "agent1_name": "TeamAntigravity / RangeAware_v2 (http://127.0.0.1:5011)",
   "agent2_name": "BaselineSuite / Bot_calling_station (http://127.0.0.1:5012)",
   "total_chips": {
-    "agent1": 54,
-    "agent2": -54
+    "agent1": 70,
+    "agent2": -70
   },
   "agent_stats": {
     "agent1": {
@@ -18,28 +18,28 @@
       "errors": 0,
       "forfeited": false,
       "error_messages": [],
-      "time_seconds": 0.059222,
-      "wall_seconds": 0.09753
+      "time_seconds": 0.055932,
+      "wall_seconds": 0.094238
     },
     "agent2": {
-      "calls": 54,
+      "calls": 52,
       "skipped_calls": 0,
       "timed_out": false,
       "errors": 0,
       "forfeited": false,
       "error_messages": [],
-      "time_seconds": 0.003025,
-      "wall_seconds": 0.036548
+      "time_seconds": 0.022989,
+      "wall_seconds": 0.055307
     }
   },
   "nets_agent1": [
     80,
     4,
-    6,
+    4,
     -8,
     -24,
     24,
-    -24,
+    -6,
     -2,
     -2,
     0
@@ -47,14 +47,1076 @@
   "nets_agent2": [
     -80,
     -4,
-    -6,
+    -4,
     8,
     24,
     -24,
-    24,
+    6,
     2,
     2,
     0
   ],
-  "elapsed_seconds": 0.137
+  "elapsed_seconds": 0.13,
+  "logs": [
+    {
+      "half": 1,
+      "deal_index": 0,
+      "button_seat": 0,
+      "hole_cards": [
+        [
+          "6c",
+          "Tc",
+          "Jh",
+          "Kh",
+          "Ks"
+        ],
+        [
+          "6h",
+          "7c",
+          "7s",
+          "Th",
+          "Qc"
+        ]
+      ],
+      "board": [
+        "7d",
+        "Kd",
+        "Ad",
+        "Js",
+        "6d"
+      ],
+      "board_revealed": [
+        "7d",
+        "Kd",
+        "Ad",
+        "Js",
+        "6d"
+      ],
+      "actions": [
+        {
+          "seat": 0,
+          "street": "PREFLOP",
+          "action": "RAISE_POT",
+          "amount": 5,
+          "street_total": 6
+        },
+        {
+          "seat": 1,
+          "street": "PREFLOP",
+          "action": "CHECK_CALL",
+          "amount": 4,
+          "street_total": 6
+        },
+        {
+          "seat": 1,
+          "street": "FLOP",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 0,
+          "street": "FLOP",
+          "action": "RAISE_POT",
+          "amount": 12,
+          "street_total": 12
+        },
+        {
+          "seat": 1,
+          "street": "FLOP",
+          "action": "CHECK_CALL",
+          "amount": 12,
+          "street_total": 12
+        },
+        {
+          "seat": 1,
+          "street": "TURN",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 0,
+          "street": "TURN",
+          "action": "RAISE_POT",
+          "amount": 36,
+          "street_total": 36
+        },
+        {
+          "seat": 1,
+          "street": "TURN",
+          "action": "CHECK_CALL",
+          "amount": 36,
+          "street_total": 36
+        },
+        {
+          "seat": 1,
+          "street": "RIVER",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 0,
+          "street": "RIVER",
+          "action": "RAISE_POT",
+          "amount": 26,
+          "street_total": 26
+        },
+        {
+          "seat": 1,
+          "street": "RIVER",
+          "action": "CHECK_CALL",
+          "amount": 26,
+          "street_total": 26
+        }
+      ],
+      "pot": 160,
+      "went_to_showdown": true,
+      "nets": [
+        80,
+        -80
+      ]
+    },
+    {
+      "half": 1,
+      "deal_index": 1,
+      "button_seat": 1,
+      "hole_cards": [
+        [
+          "6s",
+          "8s",
+          "9s",
+          "Td",
+          "Th"
+        ],
+        [
+          "7h",
+          "8c",
+          "9d",
+          "Qh",
+          "Ad"
+        ]
+      ],
+      "board": [
+        "Kd",
+        "Kc",
+        "Kh",
+        "8h",
+        "8d"
+      ],
+      "board_revealed": [
+        "Kd",
+        "Kc",
+        "Kh",
+        "8h",
+        "8d"
+      ],
+      "actions": [
+        {
+          "seat": 1,
+          "street": "PREFLOP",
+          "action": "CHECK_CALL",
+          "amount": 1,
+          "street_total": 2
+        },
+        {
+          "seat": 0,
+          "street": "PREFLOP",
+          "action": "RAISE_HALF",
+          "amount": 2,
+          "street_total": 4
+        },
+        {
+          "seat": 1,
+          "street": "PREFLOP",
+          "action": "CHECK_CALL",
+          "amount": 2,
+          "street_total": 4
+        },
+        {
+          "seat": 0,
+          "street": "FLOP",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 1,
+          "street": "FLOP",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 0,
+          "street": "TURN",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 1,
+          "street": "TURN",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 0,
+          "street": "RIVER",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 1,
+          "street": "RIVER",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        }
+      ],
+      "pot": 8,
+      "went_to_showdown": true,
+      "nets": [
+        4,
+        -4
+      ]
+    },
+    {
+      "half": 1,
+      "deal_index": 2,
+      "button_seat": 0,
+      "hole_cards": [
+        [
+          "8h",
+          "9c",
+          "9h",
+          "Tc",
+          "Th"
+        ],
+        [
+          "6h",
+          "7c",
+          "7h",
+          "9s",
+          "Ks"
+        ]
+      ],
+      "board": [
+        "6c",
+        "8c",
+        "Qd",
+        "As",
+        "Ac"
+      ],
+      "board_revealed": [
+        "6c",
+        "8c",
+        "Qd",
+        "As",
+        "Ac"
+      ],
+      "actions": [
+        {
+          "seat": 0,
+          "street": "PREFLOP",
+          "action": "CHECK_CALL",
+          "amount": 1,
+          "street_total": 2
+        },
+        {
+          "seat": 1,
+          "street": "PREFLOP",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 2
+        },
+        {
+          "seat": 1,
+          "street": "FLOP",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 0,
+          "street": "FLOP",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 1,
+          "street": "TURN",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 0,
+          "street": "TURN",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 1,
+          "street": "RIVER",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 0,
+          "street": "RIVER",
+          "action": "RAISE_HALF",
+          "amount": 2,
+          "street_total": 2
+        },
+        {
+          "seat": 1,
+          "street": "RIVER",
+          "action": "CHECK_CALL",
+          "amount": 2,
+          "street_total": 2
+        }
+      ],
+      "pot": 8,
+      "went_to_showdown": true,
+      "nets": [
+        4,
+        -4
+      ]
+    },
+    {
+      "half": 1,
+      "deal_index": 3,
+      "button_seat": 1,
+      "hole_cards": [
+        [
+          "6h",
+          "8c",
+          "9c",
+          "Jh",
+          "Js"
+        ],
+        [
+          "9d",
+          "9h",
+          "Jd",
+          "Ks",
+          "Ah"
+        ]
+      ],
+      "board": [
+        "Kc",
+        "Qd",
+        "Kd",
+        "Qc",
+        "8h"
+      ],
+      "board_revealed": [
+        "Kc",
+        "Qd",
+        "Kd",
+        "Qc",
+        "8h"
+      ],
+      "actions": [
+        {
+          "seat": 1,
+          "street": "PREFLOP",
+          "action": "CHECK_CALL",
+          "amount": 1,
+          "street_total": 2
+        },
+        {
+          "seat": 0,
+          "street": "PREFLOP",
+          "action": "RAISE_HALF",
+          "amount": 2,
+          "street_total": 4
+        },
+        {
+          "seat": 1,
+          "street": "PREFLOP",
+          "action": "CHECK_CALL",
+          "amount": 2,
+          "street_total": 4
+        },
+        {
+          "seat": 0,
+          "street": "FLOP",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 1,
+          "street": "FLOP",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 0,
+          "street": "TURN",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 1,
+          "street": "TURN",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 0,
+          "street": "RIVER",
+          "action": "RAISE_HALF",
+          "amount": 4,
+          "street_total": 4
+        },
+        {
+          "seat": 1,
+          "street": "RIVER",
+          "action": "CHECK_CALL",
+          "amount": 4,
+          "street_total": 4
+        }
+      ],
+      "pot": 16,
+      "went_to_showdown": true,
+      "nets": [
+        -8,
+        8
+      ]
+    },
+    {
+      "half": 1,
+      "deal_index": 4,
+      "button_seat": 0,
+      "hole_cards": [
+        [
+          "9d",
+          "9s",
+          "Tc",
+          "Ac",
+          "Ah"
+        ],
+        [
+          "6d",
+          "6h",
+          "8s",
+          "Kc",
+          "Ks"
+        ]
+      ],
+      "board": [
+        "7h",
+        "Js",
+        "Th",
+        "8c",
+        "8h"
+      ],
+      "board_revealed": [
+        "7h",
+        "Js",
+        "Th",
+        "8c",
+        "8h"
+      ],
+      "actions": [
+        {
+          "seat": 0,
+          "street": "PREFLOP",
+          "action": "RAISE_POT",
+          "amount": 5,
+          "street_total": 6
+        },
+        {
+          "seat": 1,
+          "street": "PREFLOP",
+          "action": "CHECK_CALL",
+          "amount": 4,
+          "street_total": 6
+        },
+        {
+          "seat": 1,
+          "street": "FLOP",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 0,
+          "street": "FLOP",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 1,
+          "street": "TURN",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 0,
+          "street": "TURN",
+          "action": "RAISE_HALF",
+          "amount": 6,
+          "street_total": 6
+        },
+        {
+          "seat": 1,
+          "street": "TURN",
+          "action": "CHECK_CALL",
+          "amount": 6,
+          "street_total": 6
+        },
+        {
+          "seat": 1,
+          "street": "RIVER",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 0,
+          "street": "RIVER",
+          "action": "RAISE_HALF",
+          "amount": 12,
+          "street_total": 12
+        },
+        {
+          "seat": 1,
+          "street": "RIVER",
+          "action": "CHECK_CALL",
+          "amount": 12,
+          "street_total": 12
+        }
+      ],
+      "pot": 48,
+      "went_to_showdown": true,
+      "nets": [
+        -24,
+        24
+      ]
+    },
+    {
+      "half": 1,
+      "deal_index": 5,
+      "button_seat": 1,
+      "hole_cards": [
+        [
+          "8c",
+          "9d",
+          "Qd",
+          "Ks",
+          "Ac"
+        ],
+        [
+          "7d",
+          "8s",
+          "Tc",
+          "Qc",
+          "Kc"
+        ]
+      ],
+      "board": [
+        "Ts",
+        "Jd",
+        "6h",
+        "Kd",
+        "Ad"
+      ],
+      "board_revealed": [
+        "Ts",
+        "Jd",
+        "6h",
+        "Kd",
+        "Ad"
+      ],
+      "actions": [
+        {
+          "seat": 1,
+          "street": "PREFLOP",
+          "action": "CHECK_CALL",
+          "amount": 1,
+          "street_total": 2
+        },
+        {
+          "seat": 0,
+          "street": "PREFLOP",
+          "action": "RAISE_HALF",
+          "amount": 2,
+          "street_total": 4
+        },
+        {
+          "seat": 1,
+          "street": "PREFLOP",
+          "action": "CHECK_CALL",
+          "amount": 2,
+          "street_total": 4
+        },
+        {
+          "seat": 0,
+          "street": "FLOP",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 1,
+          "street": "FLOP",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 0,
+          "street": "TURN",
+          "action": "RAISE_HALF",
+          "amount": 4,
+          "street_total": 4
+        },
+        {
+          "seat": 1,
+          "street": "TURN",
+          "action": "CHECK_CALL",
+          "amount": 4,
+          "street_total": 4
+        },
+        {
+          "seat": 0,
+          "street": "RIVER",
+          "action": "RAISE_POT",
+          "amount": 16,
+          "street_total": 16
+        },
+        {
+          "seat": 1,
+          "street": "RIVER",
+          "action": "CHECK_CALL",
+          "amount": 16,
+          "street_total": 16
+        }
+      ],
+      "pot": 48,
+      "went_to_showdown": true,
+      "nets": [
+        24,
+        -24
+      ]
+    },
+    {
+      "half": 1,
+      "deal_index": 6,
+      "button_seat": 0,
+      "hole_cards": [
+        [
+          "9s",
+          "Ts",
+          "Jc",
+          "Qc",
+          "Qd"
+        ],
+        [
+          "8c",
+          "8d",
+          "Js",
+          "Kh",
+          "Ks"
+        ]
+      ],
+      "board": [
+        "9c",
+        "7d",
+        "7s",
+        "8h",
+        "As"
+      ],
+      "board_revealed": [
+        "9c",
+        "7d",
+        "7s",
+        "8h",
+        "As"
+      ],
+      "actions": [
+        {
+          "seat": 0,
+          "street": "PREFLOP",
+          "action": "RAISE_POT",
+          "amount": 5,
+          "street_total": 6
+        },
+        {
+          "seat": 1,
+          "street": "PREFLOP",
+          "action": "CHECK_CALL",
+          "amount": 4,
+          "street_total": 6
+        },
+        {
+          "seat": 1,
+          "street": "FLOP",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 0,
+          "street": "FLOP",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 1,
+          "street": "TURN",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 0,
+          "street": "TURN",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 1,
+          "street": "RIVER",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 0,
+          "street": "RIVER",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        }
+      ],
+      "pot": 12,
+      "went_to_showdown": true,
+      "nets": [
+        -6,
+        6
+      ]
+    },
+    {
+      "half": 1,
+      "deal_index": 7,
+      "button_seat": 1,
+      "hole_cards": [
+        [
+          "6d",
+          "6s",
+          "8h",
+          "9h",
+          "Jd"
+        ],
+        [
+          "7c",
+          "7s",
+          "9c",
+          "Jh",
+          "Qd"
+        ]
+      ],
+      "board": [
+        "Ks",
+        "9s",
+        "Qh",
+        "Qc",
+        "Th"
+      ],
+      "board_revealed": [
+        "Ks",
+        "9s",
+        "Qh",
+        "Qc",
+        "Th"
+      ],
+      "actions": [
+        {
+          "seat": 1,
+          "street": "PREFLOP",
+          "action": "CHECK_CALL",
+          "amount": 1,
+          "street_total": 2
+        },
+        {
+          "seat": 0,
+          "street": "PREFLOP",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 2
+        },
+        {
+          "seat": 0,
+          "street": "FLOP",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 1,
+          "street": "FLOP",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 0,
+          "street": "TURN",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 1,
+          "street": "TURN",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 0,
+          "street": "RIVER",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 1,
+          "street": "RIVER",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        }
+      ],
+      "pot": 4,
+      "went_to_showdown": true,
+      "nets": [
+        -2,
+        2
+      ]
+    },
+    {
+      "half": 1,
+      "deal_index": 8,
+      "button_seat": 0,
+      "hole_cards": [
+        [
+          "6d",
+          "7c",
+          "7h",
+          "9c",
+          "9s"
+        ],
+        [
+          "6s",
+          "7d",
+          "8c",
+          "Th",
+          "Kh"
+        ]
+      ],
+      "board": [
+        "8d",
+        "Js",
+        "Tc",
+        "Td",
+        "8s"
+      ],
+      "board_revealed": [
+        "8d",
+        "Js",
+        "Tc",
+        "Td",
+        "8s"
+      ],
+      "actions": [
+        {
+          "seat": 0,
+          "street": "PREFLOP",
+          "action": "CHECK_CALL",
+          "amount": 1,
+          "street_total": 2
+        },
+        {
+          "seat": 1,
+          "street": "PREFLOP",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 2
+        },
+        {
+          "seat": 1,
+          "street": "FLOP",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 0,
+          "street": "FLOP",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 1,
+          "street": "TURN",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 0,
+          "street": "TURN",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 1,
+          "street": "RIVER",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 0,
+          "street": "RIVER",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        }
+      ],
+      "pot": 4,
+      "went_to_showdown": true,
+      "nets": [
+        -2,
+        2
+      ]
+    },
+    {
+      "half": 1,
+      "deal_index": 9,
+      "button_seat": 1,
+      "hole_cards": [
+        [
+          "6d",
+          "9c",
+          "Ts",
+          "Js",
+          "Qd"
+        ],
+        [
+          "6c",
+          "8d",
+          "Tc",
+          "Jd",
+          "Ah"
+        ]
+      ],
+      "board": [
+        "Qs",
+        "Ks",
+        "7c",
+        "Ad",
+        "8c"
+      ],
+      "board_revealed": [
+        "Qs",
+        "Ks",
+        "7c",
+        "Ad",
+        "8c"
+      ],
+      "actions": [
+        {
+          "seat": 1,
+          "street": "PREFLOP",
+          "action": "CHECK_CALL",
+          "amount": 1,
+          "street_total": 2
+        },
+        {
+          "seat": 0,
+          "street": "PREFLOP",
+          "action": "RAISE_HALF",
+          "amount": 2,
+          "street_total": 4
+        },
+        {
+          "seat": 1,
+          "street": "PREFLOP",
+          "action": "CHECK_CALL",
+          "amount": 2,
+          "street_total": 4
+        },
+        {
+          "seat": 0,
+          "street": "FLOP",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 1,
+          "street": "FLOP",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 0,
+          "street": "TURN",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 1,
+          "street": "TURN",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 0,
+          "street": "RIVER",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 1,
+          "street": "RIVER",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        }
+      ],
+      "pot": 8,
+      "went_to_showdown": true,
+      "nets": [
+        0,
+        0
+      ]
+    }
+  ]
 }

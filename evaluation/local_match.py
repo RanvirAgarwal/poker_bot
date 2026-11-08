@@ -22,7 +22,7 @@ from game import (
     make_deal, button_for_deal, default_action,
     BIG_BLIND, STARTING_STACK, NUM_DEALS, CHOP_Z,
 )
-from evaluator import warmup
+from evaluator import warmup, card_to_str
 
 
 @dataclass
@@ -40,6 +40,7 @@ class LocalMatchResult:
     elapsed_seconds: float
     agent1_errors: int
     agent2_errors: int
+    logs: Optional[dict[str, list]] = None
 
 
 def play_local_half(
@@ -52,8 +53,9 @@ def play_local_half(
     seed: str,
     half: int,
     num_deals: int = NUM_DEALS,
-) -> tuple[list[int], list[int], int, int]:
-    """Play one half locally. Returns (nets_a1, nets_a2, a1_errors, a2_errors)."""
+    keep_logs: bool = False,
+) -> tuple[list[int], list[int], int, int, Optional[list]]:
+    """Play one half locally. Returns (nets_a1, nets_a2, a1_errors, a2_errors, logs)."""
     a1_seat = 0 if half == 1 else 1
     a2_seat = 1 - a1_seat
     fns = [None, None]
@@ -78,6 +80,7 @@ def play_local_half(
     nets_a1 = []
     nets_a2 = []
     errors = [0, 0]
+    logs = [] if keep_logs else None
 
     for d in range(num_deals):
         button = button_for_deal(d)
@@ -102,6 +105,19 @@ def play_local_half(
         nets_a1.append(res.nets[a1_seat])
         nets_a2.append(res.nets[a2_seat])
 
+        if logs is not None:
+            logs.append({
+                "half": half,
+                "deal_index": d,
+                "button_seat": button,
+                "hole_cards": [[card_to_str(c) for c in hole] for hole in game.deal.hole_cards],
+                "board": [card_to_str(c) for c in game.deal.board],
+                "actions": [r.to_dict() for r in res.history],
+                "pot": res.pot,
+                "went_to_showdown": res.went_to_showdown,
+                "nets": list(res.nets),
+            })
+
         # Deliver hand results
         for seat in (0, 1):
             hr = game.hand_result(seat)
@@ -113,7 +129,7 @@ def play_local_half(
                     if errors[seat] <= 3:
                         print(f"[ERROR] seat {seat} on_hand_end raised: {e}")
 
-    return nets_a1, nets_a2, errors[a1_seat], errors[a2_seat]
+    return nets_a1, nets_a2, errors[a1_seat], errors[a2_seat], logs
 
 
 def play_local_match(
@@ -125,23 +141,24 @@ def play_local_match(
     agent2_new_half_fn: Callable[[AgentConfig, dict], None] | None = None,
     seed: str = "eval_1",
     num_deals: int = 200,
+    keep_logs: bool = False,
 ) -> LocalMatchResult:
     """Play a complete duplicate match (both halves) locally."""
     warmup()
     start = time.perf_counter()
 
     # Half 1: agent1 = seat 0
-    h1_a1, h1_a2, h1_e1, h1_e2 = play_local_half(
+    h1_a1, h1_a2, h1_e1, h1_e2, logs_h1 = play_local_half(
         agent1_fn, agent2_fn, agent1_end_fn, agent2_end_fn,
         agent1_new_half_fn, agent2_new_half_fn,
-        seed, 1, num_deals
+        seed, 1, num_deals, keep_logs=keep_logs,
     )
 
     # Half 2: agent1 = seat 1
-    h2_a1, h2_a2, h2_e1, h2_e2 = play_local_half(
+    h2_a1, h2_a2, h2_e1, h2_e2, logs_h2 = play_local_half(
         agent1_fn, agent2_fn, agent1_end_fn, agent2_end_fn,
         agent1_new_half_fn, agent2_new_half_fn,
-        seed, 2, num_deals
+        seed, 2, num_deals, keep_logs=keep_logs,
     )
 
     elapsed = time.perf_counter() - start
@@ -162,6 +179,8 @@ def play_local_match(
     else:
         verdict = "CHOP"
 
+    combined_logs = {"half1": logs_h1, "half2": logs_h2} if keep_logs else None
+
     return LocalMatchResult(
         num_deals=num_deals,
         paired_bb=paired_bb,
@@ -175,6 +194,7 @@ def play_local_match(
         elapsed_seconds=elapsed,
         agent1_errors=h1_e1 + h2_e1,
         agent2_errors=h1_e2 + h2_e2,
+        logs=combined_logs,
     )
 
 

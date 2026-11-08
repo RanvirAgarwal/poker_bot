@@ -1,11 +1,16 @@
 {
-  "cold_start_s": 0.3235528999939561,
-  "rss_mb": 0.0,
-  "mean_latency_ms": 0.931878007017076,
-  "median_latency_ms": 0.03635021857917309,
-  "p95_latency_ms": 3.1435000710189342,
-  "p99_latency_ms": 4.124599974602461,
-  "max_latency_ms": 5.243199877440929,
-  "stress_latency_ms": 3.1449999660253525,
-  "projected_charged_bank_s": 0.0
+  "environment": "Host Measurement (Windows 11, Python 3.11, unconstrained)",
+  "cold_start_seconds": 1.0373,
+  "total_requests": 1931,
+  "wall_clock_seconds": 2.119,
+  "charged_time_seconds": 0.6895,
+  "bank_budget_seconds": 8.0,
+  "bank_margin_seconds": 7.3105,
+  "request_mean_ms": 1.097,
+  "request_p50_ms": 0.921,
+  "request_p95_ms": 2.481,
+  "request_p99_ms": 3.251,
+  "request_max_ms": 18.079,
+  "stress_history_mean_ms": 1.996,
+  "stress_history_max_ms": 2.921
 }

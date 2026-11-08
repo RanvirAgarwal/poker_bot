@@ -142,3 +142,4 @@ A complete, self-contained review bundle has been exported via [`tools/export_re
 - **Path**: [`release/review_bundle_RangeAware_v2.zip`](file:///C:/Users/ranvi/poker_bot/release/review_bundle_RangeAware_v2.zip)
 - **Size**: 0.29 MB (0.90 MB uncompressed, 144 files)
 - **Contents**: Full candidate sources (`agent.py`, `runtime/`), official referee modules, 12 baseline and 9 adversarial opponents, evaluation harnesses, CFR engine and Kuhn best-response calculator, all test suites, manifests, and representative raw match JSONs. Excludes `.git`, `venv`, `__pycache__`, and binary checkpoints over GitHub size limits.
+

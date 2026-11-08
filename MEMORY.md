@@ -14,10 +14,17 @@
 
 ## 2. Current Status
 - **Independently Verified & Tested**:
-  - **Leading Candidate**: `RangeAware_v2` (`agent.py` at root, core logic in `runtime/range_aware_policy.py`).
+  - **Leading Candidate**: `RangeAware_v2` (`agent.py` at root, core logic in `runtime/range_aware_policy.py`, with continuation filtering enabled).
   - **Rollback Baseline**: `EquityBot_v1` (frozen in `runtime/policy.py`).
-  - **Official Protocol & Tests**: 42 unit, official, and agreement tests in `tests/` pass cleanly -> **42/42 PASSED**.
-  - **Harness Mathematical Parity**: Tested local duplicate simulator against official HTTP `judge_engine.py` over identical deals -> **exact 0.000 BB/deal divergence** (11.900 vs 11.900 BB/deal).
+  - **Official Protocol & Tests**: 43 unit, official, and agreement tests in `tests/` pass cleanly -> **43/43 PASSED**.
+  - **Strengthened Harness Agreement**: Bit-for-bit audit in `tests/test_harness_agreement.py` comparing observations (`hole_cards`, `board`, `button_seat`), complete action sequences `(street, action, amount)`, hand net payoffs, paired differences vector, sample std dev ($ddof=1$), 95% CI, and tournament verdict between local runner and official HTTP judge engine -> **0 divergences across all dimensions**.
+  - **Controlled Continuation Filter Study (66 Matches, 132,000 Hands Total)**:
+    - 1,000-deal duplicate matches with matched seeds comparing `WithFilter` vs `NoFilter`:
+    - `RangeAware_v2_WithFilter`: **31.0 / 33.0 points (93.9% point fraction)**, 29 Wins, 4 Chops, 0 Losses, across-match std dev $\pm 2.82$ BB/deal.
+    - `RangeAware_v2_NoFilter`: **30.5 / 33.0 points (92.4% point fraction)**, 28 Wins, 5 Chops, 0 Losses, across-match std dev $\pm 2.99$ BB/deal.
+    - Strong opponents: `WithFilter` beat `NoFilter` by **+0.421 BB/deal** vs `size_aware_equity`, **+0.179 BB/deal** vs `action_conditioned_range`, and **+0.114 BB/deal** vs `trained_response_bot`.
+    - Payoff: +280,751 chips (`WithFilter`) vs +282,052 chips (`NoFilter`) — 0.46% difference, well within sampling error ($\pm 0.02$ BB/deal).
+    - Decision: `RangeAware_v2_WithFilter` selected as the active frozen submission.
   - **Multi-Seed 1,000-Deal Empirical Benchmark (120,000 hands total across both candidates, 60,000 per candidate)**:
     - 60 complete duplicate matches across 5 independent seeds x 1,000 deals on 6 critical opponents:
     - `RangeAware_v2`: **30 Wins, 0 Chops, 0 Losses (30.0 / 30.0 points = 100.0% Win Rate)**!
@@ -36,16 +43,17 @@
   - **CFR Engine Unification & Exact Best-Response Audit**:
     - `training/mccfr.py` wraps `Game` into `PLO5ExtensiveGame` and calls `GenericMCCFRTrainer` directly, proving PLO5 training executes the exact same update algorithm audited on Kuhn.
     - Verified Kuhn best-response calculation evaluates pure strategy vectors over observable player information sets ($64$ pure strategies per seat across $6$ observable infosets) with zero access to the opponent's private cards.
-  - **Runtime & Resource Profile**:
-    - Cold start: **0.324s / 15.0s budget** (evaluator warmup takes 0.28s).
-    - Decision latency: Mean **0.93 ms**, Median **0.04 ms**, P95 **3.14 ms**, P99 **4.12 ms**, Max **5.24 ms / 1,000.0 ms hard limit**.
-    - Deep legal history (32 actions up to raise cap): **3.14 ms**.
-    - Charged bank per half: **0.00s to 3.50s / 8.0s limit**.
+  - **Exact Runtime & Time Bank Profile (Host Measurements)**:
+    - Cold start: **1.037s / 15.0s budget** over HTTP.
+    - Complete HTTP Requests (1,000 deals): 1,931 requests; Wall-clock total: 2.119s.
+    - Exact charged time bank ($\sum \max(0, t_{\text{req}} - 0.001)$): **0.690s / 8.000s bank** (PASS, **91.4% margin remaining**).
+    - Decision latency: Mean **1.10 ms**, Median **0.92 ms**, P95 **2.48 ms**, P99 **3.25 ms**, Max **18.08 ms / 1,000.0 ms hard limit**.
+    - Deep legal history (32 actions up to raise cap over HTTP): Mean **2.00 ms**, Max **2.92 ms**.
     - Reliability: **0 errors across > 30,000 HTTP requests**.
   - **Review Bundle Exported**:
-    - Packaged at `release/review_bundle_RangeAware_v2.zip` (144 files, 0.29 MB zip) containing all source, opponent suites, evaluation code, tests, manifests, and representative raw match JSONs.
+    - Packaged at `release/review_bundle_RangeAware_v2.zip` containing all source, opponent suites, evaluation code, tests, manifests, and raw JSON verdicts.
 - **Implemented but Unverified / Outstanding**:
-  - Container build via `tools/check_build.sh`: Docker CLI 29.2.1 is installed on host, but the Docker Desktop daemon service is offline (`pipe/dockerDesktopLinuxEngine: The system cannot find the file specified`). Starting Docker Desktop on Windows requires user action to launch the service. Containerized build execution remains **outstanding**.
+  - Container build via `tools/check_build.sh`: Docker CLI 29.2.1 is installed on host, but the Docker Desktop daemon service is offline (`pipe/dockerDesktopLinuxEngine: The system cannot find the file specified`). Starting Docker Desktop on Windows requires host user action to launch the application. Containerized build execution remains **outstanding**. All existing timing/memory profiling metrics are accurately documented as **Host Measurements**.
 - **Blocked**: None.
 
 ## 3. Architecture Map
@@ -77,14 +85,17 @@
   - `run_full_tournament_match.py`: Multi-process HTTP runner with fresh process restart per half.
   - `run_adversarial_and_ablations.py`: Runs adversarial suite and 4-variant ablation matrix.
   - `profile_runtime.py`: Measures cold start, memory, request latency percentiles, and deep history stress tests.
+  - `profile_http_runtime.py`: Measures exact charged time bank (`sum(max(0, req - 0.001))`) over complete HTTP requests.
+  - `compare_continuation_filter.py`: 1,000-deal duplicate comparison runner between continuation filter variants.
 - `release/`:
-  - `review_bundle_RangeAware_v2.zip`: Reviewable release package (144 files, 0.29 MB).
+  - `review_bundle_RangeAware_v2.zip`: Reviewable release package (145 files, 0.30 MB).
 - `reports/`:
   - `milestone_a_report.md`: Initial architecture and screening benchmark.
   - `milestone_b_report.md`: Full-length tournament validation, CFR audit, and opponent population.
   - `milestone_c_report.md`: Range-aware candidate, multi-seed evaluation, and complete CFR audit.
   - `milestone_d_report.md`: Adversarial validation, component ablations, runtime profiling, and reviewable release.
-  - `raw_matches/`: Complete raw judge JSON files.
+  - `milestone_e_report.md`: Candidate selection, harness agreement evidence, and release verification.
+  - `raw_matches/`: Complete raw judge JSON files (including `continuation_filter_study.json`).
 
 ## 4. Decisions Log
 - **DEC-001**: Clean separation of FastAPI plumbing from strategy code in `runtime/`.
@@ -99,6 +110,7 @@
 - **DEC-010**: Promote `RangeAware_v2` to active tournament entry point (`agent.py`). Keep `EquityBot_v1` frozen in `runtime/policy.py` as immediate verified rollback.
 - **DEC-011**: Add protected checking (trapping with strong hands OOP 20% on flop/turn) and mixed bet sizing (65% pot / 35% half-pot on strong hands) to eliminate capped checking ranges and deterministic sizing tells.
 - **DEC-012**: Unify `training/mccfr.py` with `GenericMCCFRTrainer` so PLO5 training executes the exact same engine validated against analytical Kuhn ground truth.
+- **DEC-013**: Retain continuation filtering in `RangeAware_v2` based on the controlled 66-match 1,000-deal duplicate study (31.0/33 vs 30.5/33 match points, lower across-match variance, +0.42 BB/deal vs size_aware_equity).
 
 ## 5. Skills Catalog
 - `.agents/skills/verify-poker-rules/SKILL.md`: Validates ranking, 2+3 selection, raise caps, and rules (Usable).
@@ -109,24 +121,25 @@
 - `.agents/skills/maintain-project-memory/SKILL.md`: Reconciles persistent project state in MEMORY.md (Usable).
 
 ## 6. Best Working Candidate
-- **Identifier**: `RangeAware_v2`
+- **Identifier**: `RangeAware_v2` (with continuation filtering)
 - **Entry Point**: `agent.py` at root
 - **Participant Name**: `TeamAntigravity`
 - **Agent Name**: `RangeAware_v2`
 - **Core Modules**: `runtime/features.py`, `runtime/range_aware_policy.py`, `runtime/opponent.py`
 - **Rollback Version**: `EquityBot_v1` (`runtime/policy.py`)
 - **Measured Evidence**:
+  - Controlled continuation filter study (66 matches x 1,000 duplicate deals, 132,000 hands total): **31.0 / 33.0 points (93.9% point fraction)** with 29 wins, 4 chops, 0 losses.
   - Multi-seed benchmark (5 seeds x 1,000 deals, 120,000 hands total across both candidates): **30.0 / 30.0 points (100.0% win rate)** vs EquityBot's 24.5/30 (81.7% match points, 63.3% win rate).
   - Adversarial stress suite (9 opponents): **8.5 / 9.0 points (94.4%)** with 8 wins, 1 chop, 0 losses.
   - Official HTTP 1,000-deal tournament match: **+2.164 BB/deal** (95% CI [+1.516, +2.812]) vs `action_conditioned_range` (`AGENT1_WIN`).
   - Official HTTP 1,000-deal tournament match: **+2.750 BB/deal** (95% CI [+1.230, +4.270]) vs `always_raise` (`AGENT1_WIN`).
   - Suite screening: **9.0 - 9.5 / 12.0 points** with 0 losses.
-  - Runtime: Cold start 0.32s; decision mean 0.93ms, P99 4.12ms; charged bank < 3.5s / 8.0s per half; 0 errors across > 30,000 HTTP requests.
+  - Exact Runtime (Host measurements): Cold start 1.04s; decision mean 1.10ms, P95 2.48ms, P99 3.25ms; exact charged bank 0.690s / 8.000s per 1,000-deal half; 0 errors across > 30,000 HTTP requests.
 
 ## 7. Resume Instructions
 - Run full test suite: `.\venv\Scripts\python.exe -m pytest tests -v`
 - Run harness agreement audit: `.\venv\Scripts\python.exe tests\test_harness_agreement.py`
-- Run adversarial suite & ablations: `.\venv\Scripts\python.exe evaluation\run_adversarial_and_ablations.py`
-- Run runtime profiler: `.\venv\Scripts\python.exe evaluation\profile_runtime.py`
+- Run continuation filter study: `.\venv\Scripts\python.exe evaluation\compare_continuation_filter.py`
+- Run exact HTTP runtime profiler: `.\venv\Scripts\python.exe evaluation\profile_http_runtime.py`
 - Re-export review bundle: `.\venv\Scripts\python.exe tools\export_review_bundle.py`
 - Run official full-length HTTP match: `.\venv\Scripts\python.exe evaluation\run_full_tournament_match.py --agent1 agent.py --agent2 opponents\serve_opponent.py --opp-bot action_conditioned_range --deals 1000 --seed test_seed`

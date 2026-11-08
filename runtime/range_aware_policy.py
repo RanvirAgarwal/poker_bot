@@ -28,9 +28,10 @@ from runtime.features import omaha_best_score, preflop_hand_quality
 class RangeAwarePolicy:
     """Action-Conditioned Range Policy (RangeAware_v2)."""
 
-    def __init__(self, aggression: float = 1.0, seed: int = 42):
+    def __init__(self, aggression: float = 1.0, seed: int = 42, use_continuation_filter: bool = True):
         self.aggression = aggression
         self.rng = random.Random(seed)
+        self.use_continuation_filter = use_continuation_filter
 
     def _update_memory_opp_stats(self, obs: Observation, memory: dict) -> Tuple[float, float]:
         """Update and return (preflop_raise_rate, postflop_raise_rate) from memory.
@@ -197,7 +198,10 @@ class RangeAwarePolicy:
                 cont_ties += cont_w
 
         eq_current = (wins + 0.5 * ties) / total_w if total_w > 0 else 0.5
-        eq_continue = (cont_wins + 0.5 * cont_ties) / cont_w_total if cont_w_total > 0 else eq_current
+        if self.use_continuation_filter:
+            eq_continue = (cont_wins + 0.5 * cont_ties) / cont_w_total if cont_w_total > 0 else eq_current
+        else:
+            eq_continue = eq_current
 
         return eq_current, eq_continue
 
