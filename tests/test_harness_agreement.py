@@ -25,7 +25,7 @@ ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT_DIR)
 
 from evaluation.local_match import play_local_match_fresh
-from runtime.draw_aware_policy import DrawAwarePolicy
+from runtime.counterplay_policy import CounterplayPolicy
 from opponents.baselines import CallingStationBot
 from judge_engine import HalfResult, combine_halves
 
@@ -56,10 +56,10 @@ def test_harness_agreement_exact():
     num_deals = 10
     py_exe = sys.executable
 
-    # 1. Local execution with fresh policy per half matching agent.py (_POLICY = DrawAwarePolicy)
+    # 1. Local execution with fresh policy per half matching agent.py (_POLICY = CounterplayPolicy)
     def make_p1():
-        pol = DrawAwarePolicy(aggression=1.0, seed=42)
-        return pol.choose_action, None, None
+        pol = CounterplayPolicy(seed=42)
+        return pol.choose_action, pol.on_hand_end, None
 
     def make_p2():
         bot = CallingStationBot()

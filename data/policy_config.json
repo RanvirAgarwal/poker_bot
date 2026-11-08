@@ -1,0 +1,7 @@
+{
+  "open": 0.475,
+  "iso": 0.51,
+  "range_cut": 0.7,
+  "response_cut": 0.33,
+  "bet_buffer": 0.015
+}

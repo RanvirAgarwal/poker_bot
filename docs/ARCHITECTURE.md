@@ -29,13 +29,16 @@
         \                                 /
          v                               v
 +--------------------------------------------------------------------------+
-| runtime/policy (Current: RangeAwarePolicy [RangeAware_v2],               |
-|                 Rollback: HeuristicPolicy [EquityBot_v1])                |
+| runtime/policy (Current: CounterplayPolicy [Counterplay_v3],             |
+|                 Rollback: DrawAwarePolicy [DrawAware_v1],                |
+|                           RangeAwarePolicy [RangeAware_v2],              |
+|                           HeuristicPolicy [EquityBot_v1])                |
+| - Fast preflop lookup (376,992 holding table in preflop.npy)             |
+| - 256 joint postflop runout worlds sampled via NumPy                     |
+| - Dense pair/triple card combination indexing (pair_triple.npy)          |
+| - Street-separated Bayesian opponent tracking & defense adjustments      |
 | - Action-conditioned range likelihood weighting                          |
-| - Street-separated Bayesian aggression tracking (pf_rate, post_rate)     |
-| - Continuation range equity filtering                                    |
-| - Protected check-trapping (20% OOP with monsters on flop/turn)          |
-| - Mixed value sizing (65% pot / 35% half-pot)                            |
+| - Protected check-trapping and dynamic bet sizing                        |
 | - Pot odds calculations & legal action masking fallback                  |
 +--------------------------------------------------------------------------+
 ```
@@ -44,9 +47,16 @@
 
 ```
 poker_bot/
-├── agent.py               # Tournament entry point (FastAPI web server, TeamAntigravity / RangeAware_v2)
+├── agent.py               # Tournament entry point (FastAPI web server, TeamAntigravity / Counterplay_v3)
+├── data/                  # Precomputed tables and frozen policy configuration
+│   ├── preflop.npy        # 376,992 holding equity table (4.5 MB)
+│   ├── pair_triple.npy    # Dense rank index lookup table (18.0 MB)
+│   └── policy_config.json # Hyperparameter thresholds and sizing weights
 ├── runtime/               # Strategy execution modules
-│   ├── range_aware_policy.py # Active tournament candidate (RangeAware_v2)
+│   ├── counterplay_policy.py # Active tournament candidate (Counterplay_v3)
+│   ├── dense_equity.py    # Fast vectorized Omaha equity calculation engine
+│   ├── draw_aware_policy.py # Preserved rollback candidate (DrawAware_v1)
+│   ├── range_aware_policy.py # Preserved rollback candidate (RangeAware_v2)
 │   ├── policy.py          # Preserved baseline rollback candidate (EquityBot_v1)
 │   ├── ablations.py       # Isolated ablation variants
 │   ├── features.py        # Observation -> feature vectors, Monte Carlo sampling

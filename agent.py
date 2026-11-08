@@ -28,17 +28,13 @@ from game import Action, AgentConfig, HandResult, Observation, Street
 warmup()
 
 # Import our strategy modules
-from runtime.draw_aware_policy import DrawAwarePolicy
-from runtime.range_aware_policy import RangeAwarePolicy
-from runtime.policy import HeuristicPolicy  # Preserved rollback policy (EquityBot_v1)
-from runtime.opponent import OpponentModel
+from runtime.counterplay_policy import CounterplayPolicy
 
 PARTICIPANT = "TeamAntigravity"
-AGENT_NAME = "DrawAware_v1"
+AGENT_NAME = "Counterplay_v3"
 
-# Active Candidate: DrawAware_v1 (addresses F1 draw-blindness with joint deal sampling)
-# Rollback: set _POLICY = RangeAwarePolicy(aggression=1.0, seed=42) or HeuristicPolicy(aggression=1.0, seed=42)
-_POLICY = DrawAwarePolicy(aggression=1.0, seed=42)
+# Experimental candidate; originals remain in their separate release directories.
+_POLICY = CounterplayPolicy(seed=42)
 
 
 # ===== YOUR CODE HERE =====
@@ -57,9 +53,6 @@ def new_half(config: AgentConfig, memory: dict) -> None:
         "num_hands": config.num_hands,
         "raise_cap": config.raise_cap,
     }
-
-    # Initialize opponent model
-    OpponentModel.init_memory(memory)
 
     # Track our own performance
     memory["my_net_total"] = 0
@@ -105,8 +98,8 @@ def on_hand_end(result: HandResult, memory: dict) -> None:
     memory["hands_played"] = memory.get("hands_played", 0) + 1
     memory["my_net_total"] = memory.get("my_net_total", 0) + result.my_net
 
-    # Update opponent model
-    OpponentModel.update(result, memory)
+    # Update observable opponent response statistics.
+    _POLICY.on_hand_end(result, memory)
 
 
 # ===== END OF YOUR CODE =====

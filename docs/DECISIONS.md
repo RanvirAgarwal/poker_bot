@@ -128,7 +128,18 @@
 
 ## DEC-018: Promotion of DrawAware_v1 as Active Tournament Candidate
 - **Date**: 2026-11-08
-- **Status**: Accepted
+- **Status**: Superseded by DEC-019
 - **Context**: Full-length container tournament matches and head-to-head empirical benchmarks demonstrated decisive strategic superiority of `DrawAware_v1` over `RangeAware_v2`.
 - **Decision**: Promote `DrawAware_v1` as the active release submission in `agent.py`. Preserve `RangeAware_v2` and `EquityBot_v1` as verified fallback candidates.
 - **Rationale**: Outperformed `RangeAware_v2` in container matches (+10.48 vs +0.93 BB/deal vs ACR; +9.44 vs +4.57 BB/deal vs Inversion) and head-to-head matches (+3.62 vs +3.05 BB/deal overall; +0.64 vs +0.05 BB/deal vs independent DrawAwareOpponent) with zero errors and ample bank headroom.
+
+## DEC-019: Promotion of Counterplay_v3 as Tournament Release Candidate
+- **Date**: 2026-11-08
+- **Status**: Accepted
+- **Context**: Rigorous Docker qualification in restricted containers (1 CPU, 4 GB RAM, read-only FS, 512MB tmpfs, dropped caps) tested against pinned external competitors (Timecasters, TwoStack, vsmBOT) across 3 predeclared seeds (18,000 hands).
+- **Decision**: Promote `Counterplay_v3` to active candidate in `agent.py`. Retain `DrawAware_v1` (`release/review_bundle_DrawAware_v1.zip`), `RangeAware_v2`, and `EquityBot_v1` as rollback versions.
+- **Rationale**:
+  1. Achieved **8.5 / 9.0 match points (94.4%)** in official Docker container matches (+1.442 BB/deal mean).
+  2. Demonstrated **+3.014 BB/deal paired advantage** over `DrawAware_v1` across all 9 matched deals, reversing all 6 losses against Timecasters and TwoStack into 5 wins and 1 chop.
+  3. Swept broader opponent archetypes with 4 / 4 wins (+6.696 BB/deal mean).
+  4. Flawless container metrics: 0 judge errors, 0 internal exceptions, 0 fallbacks, 1.0 ms median latency, 1.8% RAM utilization, max 4.67s / 8.00s time bank consumed.

@@ -4,3 +4,6 @@ __pycache__/
 .pytest_cache/
 *.log
 
+opponents_external/
+release/
+scratch/

@@ -66,10 +66,12 @@ def run_half_process(
             raise RuntimeError(f"Failed to start container {agent1_target}: {res_d.stderr}")
     else:
         print(f"\n[Half {half}] Spawning fresh server process ({agent1_target})...")
-        p1 = subprocess.Popen([python_exe, agent1_target], env=env1)
+        agent1_dir = os.path.dirname(os.path.abspath(agent1_target)) if os.path.isfile(agent1_target) else ROOT_DIR
+        p1 = subprocess.Popen([python_exe, agent1_target], env=env1, cwd=agent1_dir)
 
     print(f"[Half {half}] Spawning opponent server process ({agent2_script}, bot={opp_bot})...")
-    p2 = subprocess.Popen([python_exe, agent2_script], env=env2)
+    agent2_dir = os.path.dirname(os.path.abspath(agent2_script)) if os.path.isfile(agent2_script) else ROOT_DIR
+    p2 = subprocess.Popen([python_exe, agent2_script], env=env2, cwd=agent2_dir)
 
     try:
         # Give servers a moment to bind and warmup
@@ -94,8 +96,21 @@ def run_half_process(
         if not os.path.exists(output_json):
             raise RuntimeError(f"Half {half} did not produce JSON output at {output_json}")
 
+        agent1_info = {}
+        try:
+            import urllib.request
+            with urllib.request.urlopen(f"http://127.0.0.1:{port1}/", timeout=1.0) as req:
+                agent1_info = json.loads(req.read().decode("utf-8"))
+        except Exception as e:
+            agent1_info = {"query_error": str(e)}
+
         with open(output_json, "r", encoding="utf-8") as f:
-            return json.load(f)
+            data = json.load(f)
+        if agent1_info:
+            data["agent1_info"] = agent1_info
+            with open(output_json, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2)
+        return data
 
     finally:
         print(f"[Half {half}] Terminating processes / containers...")
@@ -130,11 +145,14 @@ def run_full_duplicate_match(
     output_dir: str = "reports/raw_matches",
     opp_bot: str = "calling_station",
     use_container: bool = False,
+    match_id: Optional[str] = None,
 ) -> MatchResult:
+    if match_id is None:
+        match_id = seed
     os.makedirs(output_dir, exist_ok=True)
-    h1_json = os.path.join(output_dir, f"{seed}_half1.json")
-    h2_json = os.path.join(output_dir, f"{seed}_half2.json")
-    match_json = os.path.join(output_dir, f"{seed}_match.json")
+    h1_json = os.path.join(output_dir, f"{match_id}_half1.json")
+    h2_json = os.path.join(output_dir, f"{match_id}_half2.json")
+    match_json = os.path.join(output_dir, f"{match_id}_match.json")
 
     print("=" * 75)
     print(f"OFFICIAL TOURNAMENT MATCH: {deals} deals duplicate (2,000 hands total)")
@@ -169,6 +187,7 @@ if __name__ == "__main__":
     parser.add_argument("--seed", default="seed_1")
     parser.add_argument("--outdir", default="reports/raw_matches")
     parser.add_argument("--opp-bot", default="calling_station")
+    parser.add_argument("--match-id", default=None, help="Identifier prefix for saved match JSON files")
     parser.add_argument("--container", action="store_true", help="Run agent1 inside restricted Docker container")
     parser.add_argument("--container-image", default="poker-agent-check:latest")
     args = parser.parse_args()
@@ -182,5 +201,6 @@ if __name__ == "__main__":
         output_dir=args.outdir,
         opp_bot=args.opp_bot,
         use_container=args.container,
+        match_id=args.match_id,
     )
 

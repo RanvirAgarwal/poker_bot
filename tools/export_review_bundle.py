@@ -23,22 +23,22 @@ import zipfile
 ROOT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RELEASE_DIR = os.path.join(ROOT_DIR, "release")
 os.makedirs(RELEASE_DIR, exist_ok=True)
-BUNDLE_NAME = sys.argv[1] if len(sys.argv) > 1 else "review_bundle_DrawAware_v1.zip"
+BUNDLE_NAME = sys.argv[1] if len(sys.argv) > 1 else "review_bundle_Counterplay_v3.zip"
 BUNDLE_PATH = os.path.join(RELEASE_DIR, BUNDLE_NAME)
 
 
 def should_include(rel_path: str) -> bool:
     # Exclude directories
-    for ex in (".git", "venv", ".pytest_cache", "__pycache__"):
+    for ex in (".git", "venv", ".pytest_cache", "__pycache__", "opponents_external", "release", "starter"):
         if rel_path.startswith(ex + os.sep) or rel_path == ex:
             return False
 
-    # Exclude large binary checkpoints > 5MB
+    # Exclude large binary checkpoints > 50MB
     if rel_path.endswith(".pkl"):
         return False
 
     # Target specific directories and root files
-    allowed_dirs = ("runtime", "opponents", "training", "evaluation", "tests", "docker", "tools", "docs", "reports")
+    allowed_dirs = ("runtime", "data", "opponents", "training", "evaluation", "tests", "docker", "tools", "docs", "reports")
     for d in allowed_dirs:
         if rel_path.startswith(d + os.sep):
             return True
