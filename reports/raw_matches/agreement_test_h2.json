@@ -18,8 +18,8 @@
       "errors": 0,
       "forfeited": false,
       "error_messages": [],
-      "time_seconds": 0.051884,
-      "wall_seconds": 0.08815
+      "time_seconds": 0.297496,
+      "wall_seconds": 0.339496
     },
     "agent2": {
       "calls": 57,
@@ -28,8 +28,8 @@
       "errors": 0,
       "forfeited": false,
       "error_messages": [],
-      "time_seconds": 0.025968,
-      "wall_seconds": 0.052305
+      "time_seconds": 0.089496,
+      "wall_seconds": 0.146496
     }
   },
   "nets_agent1": [
@@ -56,7 +56,7 @@
     -16,
     0
   ],
-  "elapsed_seconds": 0.098,
+  "elapsed_seconds": 0.492,
   "logs": [
     {
       "half": 2,

@@ -14,9 +14,10 @@
 
 ## 2. Current Status
 - **Independently Verified & Qualified (Milestone G - Counterplay_v3 Release)**:
-  - **Leading Release Candidate**: `Counterplay_v3` (`agent.py` at root, core logic in `runtime/counterplay_policy.py`, `runtime/dense_equity.py`, lookup tables in `data/preflop.npy` and `data/pair_triple.npy`, frozen config in `data/policy_config.json`).
-  - **Docker Image Digest**: `sha256:014fa99812add00e1bcb3c7a8144139fcf7b647f950c505f56249b5569a57a84` (`poker-agent-check:latest`).
+  - **Selected Release Candidate**: `Counterplay_v3` (`agent.py` at root, core logic in `runtime/counterplay_policy.py`, `runtime/dense_equity.py`, lookup tables in `data/preflop.npy` and `data/pair_triple.npy`, frozen config in `data/policy_config.json`).
+  - **Docker Image ID**: Local Docker Image ID `sha256:8e0a567aff158c9e23eeba15d5f5a024878ba3b9b338c31f1209ce705ba51340` (`poker-agent-check:latest`; previous builds `sha256:05ce740f89930fb4ac8800b40f4dc8b065dfb526a349bdd78745d858afd5dcb1`, `sha256:014fa99812add00e1bcb3c7a8144139fcf7b647f950c505f56249b5569a57a84`).
   - **Git Branch**: `counterplay-v3-integration`.
+  - **Release Commit SHA**: `5c6adbd96311bae48a7f17fcd2c5f7a92c460282`.
   - **Rollback Baseline 1**: `DrawAware_v1` (preserved in `opponents/agent_drawaware_v1.py` and `release/review_bundle_DrawAware_v1.zip`, commit `a1debba524ce439fcacaec8ff45509140234a15b`).
   - **Rollback Baseline 2**: `RangeAware_v2` (frozen in `runtime/range_aware_policy.py`, commit `6be5da6c9610a844bb3f19179c98e9b462174274`).
   - **Rollback Baseline 3**: `EquityBot_v1` (frozen in `runtime/policy.py`).
@@ -25,17 +26,17 @@
   - **Official Container Verification (`tools/check_build.sh`)**:
     - Image adds 82 MB on base (cap: 3,072 MB).
     - Cold start: 1.0s / 15.0s budget over HTTP.
-    - Smoke test: PASSED. ALL CHECKS PASSED.
+    - Smoke test: PASSED. ALL CHECKS PASSED. Container smoke test runs with `--network none`.
   - **Full 1,000-Deal Restricted Docker Qualification Matches (18,000 Hands)**:
     - Executed with 1 CPU, 4 GB RAM, read-only FS, 512MB tmpfs, dropped caps, fresh container per half.
-    - vs **Timecasters** (`a61a1388f24c6495695d40be5026479266afb818`): **2.5 / 3.0 pts (83.3%)**, mean **+0.858 BB/deal** (1 Chop, 2 Wins).
+    - vs **Timecasters** (`a61a1388f24c6495695d40be5026479266afb818`): **2.5 / 3.0 pts (83.3%)**, mean **+0.858 BB/deal** (1 Chop `[-0.125, +1.462]`, 2 Wins).
     - vs **TwoStack** (`8f4fbc964c0d2814c36cd3455f25a379e0cf6f66`): **3.0 / 3.0 pts (100.0%)**, mean **+1.278 BB/deal** (3 Wins).
-    - vs **vsmBOT** (`22330246ecb2143b9256204b106473bdfdeaa7a1`): **3.0 / 3.0 pts (100.0%)**, mean **+2.192 BB/deal** (3 Wins).
-    - **Total Container Qualification Score: 8.5 / 9.0 match points (94.4%)**, **+1.442 BB/deal mean**.
+    - vs **vsmBOT** (`22330246ecb2143b9256204b106473bdfdeaa7a1`): **3.0 / 3.0 pts (100.0%)**, mean **+2.192 BB/deal** (3 Wins; opponent exhausted 8.0s time bank, skipping 1,343–1,432 decisions/match).
+    - **Total Public Container Score: 8.5 / 9.0 match points (94.4%)**, **+1.442 BB/deal mean** (8 wins strictly exclude 0; 1 chop includes 0).
     - **Operational Reliability**: **0 judge errors, 0 internal exceptions, 0 fallbacks, 0 timeouts across 69,802 container requests**.
-    - **Bank Time**: Max thinking bank used was **4.67s / 8.00s limit** (average ~3.3s).
+    - **Bank Time**: Max thinking bank used was **4.67s / 8.00s** across 9 public matches, and **4.94s / 8.00s** across all 13 matches (`calling_station` H2). Average ~3.3s.
   - **Matched Comparison vs Preserved DrawAware_v1 Baseline**:
-    - `DrawAware_v1` achieved only 3.0 / 9.0 points (33.3%), losing all 6 matches to Timecasters and TwoStack (-1.571 BB/deal overall mean).
+    - `DrawAware_v1` achieved 3.0 / 9.0 points (33.3%), losing all 6 matches to Timecasters and TwoStack (-1.571 BB/deal all-nine mean; -2.997 BB/deal TC/TS-only mean).
     - `Counterplay_v3` achieved a **+3.014 BB/deal paired advantage** across all 9 matched seeds, strictly reversing all 6 losses into 5 wins and 1 chop.
   - **Broader Style Evaluation (Container Matches, 8,000 Hands)**:
     - vs `check_fold`: **+1.475 BB/deal** (WIN, 1.0 pt, CI [+1.46, +1.49])
@@ -43,11 +44,15 @@
     - vs `random`: **+6.745 BB/deal** (WIN, 1.0 pt, CI [+5.32, +8.17])
     - vs `always_raise`: **+6.658 BB/deal** (WIN, 1.0 pt, CI [+5.01, +8.31])
     - Overall: **4.0 / 4.0 points (100%)**, mean **+6.696 BB/deal**.
-  - **Resource Telemetry**:
+  - **Challenger RobustPortfolio_v4 Qualification Attempt (Evaluated on branch `robust-portfolio-v4-qualification`)**:
+    - Passed 25 package tests and 89 project tests; passed container build/smoke check (+86 MB, cold start 3.5s).
+    - In 1,000-deal restricted container matches, v4 exhausted its 8.0s bank by hand ~400 in 100% of halves (1,666 H1 / 2,062 H2 skipped calls vs `calling_station`; 740 H1 / 748 H2 skipped calls vs `r1_6`).
+    - Suffered an outright match defeat vs `r1_6` (-0.571 BB/deal, CI `[-1.138, -0.004]`). Decisively failed the $\le 6.0$s headroom policy and is archived as offline research.
+  - **Resource Telemetry (Counterplay_v3)**:
     - Latency: Mean 1.06 ms, P50 1.00 ms, P95 1.51 ms, P99 1.84 ms, Max 2.80 ms (< 1,000.0 ms limit).
     - Memory: 74.54 MiB RSS / 4,096 MiB (1.82% utilization, >4,020 MiB headroom).
   - **Exported Review Bundles**:
-    - `release/review_bundle_Counterplay_v3.zip` (287 files, 24.51 MB uncompressed, 2.56 MB zip).
+    - `release/review_bundle_Counterplay_v3.zip` (288 files, 2.57 MB zip, < 20 MB cap).
     - `release/review_bundle_DrawAware_v1.zip` (preserved rollback archive).
 
 ## 3. Architecture Map
@@ -90,12 +95,16 @@
 - **DEC-001** through **DEC-017**: Historical architecture, heuristics, CFR unification, and bug resolutions (see `docs/DECISIONS.md`).
 - **DEC-018**: Promotion of `DrawAware_v1` as Active Tournament Candidate (superseded by DEC-019).
 - **DEC-019**: Promotion of `Counterplay_v3` as Tournament Release Candidate.
+- **DEC-020**: Selection of `Counterplay_v3` over `RobustPortfolio_v4` for Final Release (v4 bank exhaustion failure).
 
 ## 5. Best Working Candidate
 - **Identifier**: `Counterplay_v3`
 - **Entry Point**: `agent.py` at root
 - **Participant Name**: `TeamAntigravity`
 - **Agent Name**: `Counterplay_v3`
+- **Git Branch**: `counterplay-v3-integration`
+- **Release Commit SHA**: `5c6adbd96311bae48a7f17fcd2c5f7a92c460282`
+- **Docker Image ID**: `sha256:8e0a567aff158c9e23eeba15d5f5a024878ba3b9b338c31f1209ce705ba51340` (`poker-agent-check:latest`)
 - **Core Modules**: `runtime/counterplay_policy.py`, `runtime/dense_equity.py`, `data/preflop.npy`, `data/pair_triple.npy`, `data/policy_config.json`
 - **Rollback Version 1**: `DrawAware_v1` (`opponents/agent_drawaware_v1.py`, `release/review_bundle_DrawAware_v1.zip`, commit `a1debba`)
 - **Rollback Version 2**: `RangeAware_v2` (`runtime/range_aware_policy.py`, commit `6be5da6`)

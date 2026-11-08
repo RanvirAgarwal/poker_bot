@@ -143,3 +143,13 @@
   2. Demonstrated **+3.014 BB/deal paired advantage** over `DrawAware_v1` across all 9 matched deals, reversing all 6 losses against Timecasters and TwoStack into 5 wins and 1 chop.
   3. Swept broader opponent archetypes with 4 / 4 wins (+6.696 BB/deal mean).
   4. Flawless container metrics: 0 judge errors, 0 internal exceptions, 0 fallbacks, 1.0 ms median latency, 1.8% RAM utilization, max 4.67s / 8.00s time bank consumed.
+
+## DEC-020: Candidate Selection - Counterplay_v3 Over RobustPortfolio_v4 for Final Release
+- **Date**: 2026-11-08
+- **Status**: Accepted
+- **Context**: A challenger candidate, `RobustPortfolio_v4`, demonstrated theoretical resistance to searched counter-strategies in unconstrained host runs. To determine the tournament release, both candidates were evaluated under official tournament container constraints (1 CPU, 4 GB RAM, read-only root FS, 512MB tmpfs, no runtime internet, 8.0s time bank per half).
+- **Decision**: Finalize `Counterplay_v3` as the sole submission candidate on branch `counterplay-v3-integration`. Archive `RobustPortfolio_v4` on branch `robust-portfolio-v4-qualification` as an offline research candidate. Retain `DrawAware_v1` as the primary tested rollback version.
+- **Rationale**:
+  1. **Strict Operational Qualification**: In 1,000-deal container duplicate matches, `RobustPortfolio_v4` consumed excessive CPU per decision across its ensemble of range models and response trees, exhausting its 8.0-second time bank by hand ~400 in every half. This triggered 3,728 skipped decisions vs `calling_station` and 1,488 skipped decisions vs `r1_6`, leading to an outright match defeat against `r1_6` (-0.571 BB/deal). It decisively failed the mandatory $\le 6.0$-second bank headroom policy.
+  2. **Operational Superiority of Counterplay_v3**: `Counterplay_v3` executed 13 full container matches (26,000 hands) with 0 timeouts, 0 judge errors, 0 internal exceptions, and 0 fallbacks. Its median latency is 1.0 ms, memory footprint is 74.5 MiB RSS (< 2% RAM), and maximum bank usage is 4.94s / 8.00s (average ~3.3s).
+  3. **Family-Weighted Empirical Performance**: `Counterplay_v3` achieved 8.5 / 9.0 points (94.4%) against public competitors and 4.0 / 4.0 points (100%) against canonical styles, with all win intervals strictly bounded away from zero. Under the family-weighted objective, `Counterplay_v3` is strictly superior and operationally viable.

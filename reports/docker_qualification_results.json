@@ -23,7 +23,7 @@
         "h2_errors": 0,
         "internal_exceptions": 0,
         "illegal_fallbacks": 0,
-        "elapsed_sec": 0.0
+        "elapsed_sec": 22.758
       },
       "docker_val_20261108_02": {
         "verdict": "AGENT1_WIN",
