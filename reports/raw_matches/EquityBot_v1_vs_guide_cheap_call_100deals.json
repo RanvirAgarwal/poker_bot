@@ -1,0 +1,14 @@
+{
+  "candidate": "EquityBot_v1",
+  "opponent": "guide_cheap_call",
+  "num_deals": 100,
+  "seed": "milestone_c_eval3_guide_cheap_call",
+  "mean_bb": 2.68,
+  "ci": [
+    2.1180642748570624,
+    3.241935725142938
+  ],
+  "std_bb": 2.8670190058313145,
+  "verdict": "AGENT1_WIN",
+  "elapsed_seconds": 0.7472195625305176
+}

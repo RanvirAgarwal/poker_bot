@@ -12,4 +12,10 @@ This report documents the rigorous verification, mathematical audit, empirical l
 5. **Coverage Audit**: Tested 2k vs 10k CFR checkpoints on held-out deals:
    - 2k checkpoint: 48,421 InfoSets, 97.1% coverage (81.1% on River, 18.9% fallback).
    - 10k checkpoint: 84,492 InfoSets, **99.5% coverage (96.2% on River, 0.5% overall fallback)**.
-6. **Expanded 12-Opponent Benchmark**: Evaluated `EquityBot_v1`, `CFRBot_10k`, and `HybridPolicy` across 12 diverse opponents and attackers. `EquityBot_v1` scored **9.0 / 12 points (75.0%)**, outperforming `HybridPolicy` (7.5 pts) and `CFRBot_10k` (6.5 pts). `EquityBot_v1` is strictly preserved as the active tournament candidate.
+6. **Expanded 12-Opponent Benchmark**: Evaluated `EquityBot_v1`, `CFRBot_10k`, and `HybridPolicy` across 12 diverse opponents and attackers.
+   - `EquityBot_v1` scored **9.0 / 12 points (75.0%)** (6 wins, 6 chops, 0 losses).
+   - `HybridPolicy` scored **7.5 / 12 points (62.5%)** (5 wins, 5 chops, 2 losses).
+   - `CFRBot_10k` scored **7.5 / 12 points (62.5%)** (4 wins, 7 chops, 1 loss). *(Correction note: Initially recorded as 6.5 pts due to manual addition error; recomputed directly from raw verdicts: 4*1.0 + 7*0.5 + 1*0.0 = 7.5 pts).*
+   - Note on interpretation: CHOP reflects that the 95% confidence interval spans zero (insufficient evidence for a decisive verdict under the tournament judge), rather than proof of equal skill. Similarly, lookup coverage demonstrates exploration breadth but does not imply unexploitability.
+
+

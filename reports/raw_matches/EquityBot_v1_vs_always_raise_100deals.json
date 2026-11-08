@@ -1,0 +1,14 @@
+{
+  "candidate": "EquityBot_v1",
+  "opponent": "always_raise",
+  "num_deals": 100,
+  "seed": "milestone_c_eval3_always_raise",
+  "mean_bb": 3.76,
+  "ci": [
+    -1.177207229872681,
+    8.697207229872681
+  ],
+  "std_bb": 25.18983280547286,
+  "verdict": "CHOP",
+  "elapsed_seconds": 0.3278818130493164
+}

@@ -1,0 +1,14 @@
+{
+  "candidate": "RangeAware_v2",
+  "opponent": "calling_station",
+  "num_deals": 100,
+  "seed": "milestone_c_eval3_calling_station",
+  "mean_bb": 9.865,
+  "ci": [
+    6.4442509195921565,
+    13.285749080407843
+  ],
+  "std_bb": 17.452801430652265,
+  "verdict": "AGENT1_WIN",
+  "elapsed_seconds": 0.8944578170776367
+}

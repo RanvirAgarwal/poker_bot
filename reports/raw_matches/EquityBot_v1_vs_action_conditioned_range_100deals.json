@@ -1,0 +1,14 @@
+{
+  "candidate": "EquityBot_v1",
+  "opponent": "action_conditioned_range",
+  "num_deals": 100,
+  "seed": "milestone_c_eval3_action_conditioned_range",
+  "mean_bb": -0.66,
+  "ci": [
+    -2.924450625818032,
+    1.6044506258180316
+  ],
+  "std_bb": 11.553319519479755,
+  "verdict": "CHOP",
+  "elapsed_seconds": 1.8362929821014404
+}

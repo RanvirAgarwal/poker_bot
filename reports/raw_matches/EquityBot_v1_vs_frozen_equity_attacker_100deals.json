@@ -1,0 +1,14 @@
+{
+  "candidate": "EquityBot_v1",
+  "opponent": "frozen_equity_attacker",
+  "num_deals": 100,
+  "seed": "milestone_c_eval3_frozen_equity_attacker",
+  "mean_bb": -0.71,
+  "ci": [
+    -2.5682283118578026,
+    1.1482283118578027
+  ],
+  "std_bb": 9.480756693152054,
+  "verdict": "CHOP",
+  "elapsed_seconds": 0.25218749046325684
+}

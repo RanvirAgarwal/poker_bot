@@ -1,0 +1,14 @@
+{
+  "candidate": "RangeAware_v2",
+  "opponent": "equity_call",
+  "num_deals": 100,
+  "seed": "milestone_c_eval3_equity_call",
+  "mean_bb": 0.86,
+  "ci": [
+    -1.3182960272245419,
+    3.0382960272245416
+  ],
+  "std_bb": 11.11375524094154,
+  "verdict": "CHOP",
+  "elapsed_seconds": 1.9565134048461914
+}

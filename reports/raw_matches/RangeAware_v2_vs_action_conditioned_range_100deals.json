@@ -1,0 +1,14 @@
+{
+  "candidate": "RangeAware_v2",
+  "opponent": "action_conditioned_range",
+  "num_deals": 100,
+  "seed": "milestone_c_eval3_action_conditioned_range",
+  "mean_bb": 0.81,
+  "ci": [
+    -1.3812040651088378,
+    3.001204065108838
+  ],
+  "std_bb": 11.179612577085907,
+  "verdict": "CHOP",
+  "elapsed_seconds": 2.430943012237549
+}

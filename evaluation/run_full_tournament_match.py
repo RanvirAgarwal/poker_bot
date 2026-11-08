@@ -30,6 +30,7 @@ def run_half_process(
     output_json: str,
     port1: int = 5008,
     port2: int = 5009,
+    opp_bot: str = "calling_station",
 ) -> Dict[str, Any]:
     python_exe = sys.executable
 
@@ -37,6 +38,7 @@ def run_half_process(
     env1["PORT"] = str(port1)
     env2 = os.environ.copy()
     env2["PORT"] = str(port2)
+    env2["OPPONENT_BOT"] = opp_bot
 
     print(f"\n[Half {half}] Spawning fresh server processes...")
     p1 = subprocess.Popen([python_exe, agent1_script], env=env1)
@@ -88,6 +90,7 @@ def run_full_duplicate_match(
     deals: int = 1000,
     seed: str = "tournament_seed_1",
     output_dir: str = "reports/raw_matches",
+    opp_bot: str = "calling_station",
 ) -> MatchResult:
     os.makedirs(output_dir, exist_ok=True)
     h1_json = os.path.join(output_dir, f"{seed}_half1.json")
@@ -97,12 +100,12 @@ def run_full_duplicate_match(
     print("=" * 75)
     print(f"OFFICIAL TOURNAMENT MATCH: {deals} deals duplicate (2,000 hands total)")
     print(f"Agent 1: {agent1_script}")
-    print(f"Agent 2: {agent2_script}")
+    print(f"Agent 2: {agent2_script} (bot: {opp_bot})")
     print(f"Seed: {seed}")
     print("=" * 75)
 
-    data1 = run_half_process(agent1_script, agent2_script, 1, deals, seed, h1_json)
-    data2 = run_half_process(agent1_script, agent2_script, 2, deals, seed, h2_json)
+    data1 = run_half_process(agent1_script, agent2_script, 1, deals, seed, h1_json, opp_bot=opp_bot)
+    data2 = run_half_process(agent1_script, agent2_script, 2, deals, seed, h2_json, opp_bot=opp_bot)
 
     half1 = HalfResult.from_dict(data1)
     half2 = HalfResult.from_dict(data2)
@@ -126,9 +129,10 @@ if __name__ == "__main__":
     parser.add_argument("--deals", type=int, default=1000)
     parser.add_argument("--seed", default="seed_1")
     parser.add_argument("--outdir", default="reports/raw_matches")
+    parser.add_argument("--opp-bot", default="calling_station")
     args = parser.parse_args()
 
     a1 = os.path.abspath(args.agent1)
     a2 = os.path.abspath(args.agent2)
-    run_full_duplicate_match(a1, a2, deals=args.deals, seed=args.seed, output_dir=args.outdir)
+    run_full_duplicate_match(a1, a2, deals=args.deals, seed=args.seed, output_dir=args.outdir, opp_bot=args.opp_bot)
 

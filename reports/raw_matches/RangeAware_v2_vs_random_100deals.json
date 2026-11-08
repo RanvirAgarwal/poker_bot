@@ -1,0 +1,14 @@
+{
+  "candidate": "RangeAware_v2",
+  "opponent": "random",
+  "num_deals": 100,
+  "seed": "milestone_c_eval3_random",
+  "mean_bb": 5.21,
+  "ci": [
+    0.07062560754146041,
+    10.34937439245854
+  ],
+  "std_bb": 26.221297920706835,
+  "verdict": "AGENT1_WIN",
+  "elapsed_seconds": 0.3077242374420166
+}

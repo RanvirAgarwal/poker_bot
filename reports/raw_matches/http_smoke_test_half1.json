@@ -1,0 +1,60 @@
+{
+  "kind": "half_result",
+  "half": 1,
+  "match_seed": "http_smoke_test",
+  "num_deals": 10,
+  "agent1_seat": 0,
+  "agent1_name": "TeamAntigravity / RangeAware_v2 (http://127.0.0.1:5008)",
+  "agent2_name": "BaselineSuite / Bot_action_conditioned_range (http://127.0.0.1:5009)",
+  "total_chips": {
+    "agent1": 0,
+    "agent2": 0
+  },
+  "agent_stats": {
+    "agent1": {
+      "calls": 37,
+      "skipped_calls": 0,
+      "timed_out": false,
+      "errors": 0,
+      "forfeited": false,
+      "error_messages": [],
+      "time_seconds": 0.079769,
+      "wall_seconds": 0.114963
+    },
+    "agent2": {
+      "calls": 41,
+      "skipped_calls": 0,
+      "timed_out": false,
+      "errors": 0,
+      "forfeited": false,
+      "error_messages": [],
+      "time_seconds": 0.062442,
+      "wall_seconds": 0.10034
+    }
+  },
+  "nets_agent1": [
+    80,
+    4,
+    6,
+    -80,
+    -2,
+    4,
+    -16,
+    -6,
+    6,
+    4
+  ],
+  "nets_agent2": [
+    -80,
+    -4,
+    -6,
+    80,
+    2,
+    -4,
+    16,
+    6,
+    -6,
+    -4
+  ],
+  "elapsed_seconds": 0.217
+}

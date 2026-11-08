@@ -1,0 +1,14 @@
+{
+  "candidate": "RangeAware_v2",
+  "opponent": "check_attacker",
+  "num_deals": 100,
+  "seed": "milestone_c_eval3_check_attacker",
+  "mean_bb": -1.51,
+  "ci": [
+    -5.041462397513317,
+    2.021462397513317
+  ],
+  "std_bb": 18.01766529343529,
+  "verdict": "CHOP",
+  "elapsed_seconds": 1.781958818435669
+}

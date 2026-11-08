@@ -1,0 +1,90 @@
+{
+  "kind": "match_result",
+  "match_seed": "http_smoke_test",
+  "num_deals": 10,
+  "agent1_name": "TeamAntigravity / RangeAware_v2 (http://127.0.0.1:5008)",
+  "agent2_name": "BaselineSuite / Bot_action_conditioned_range (http://127.0.0.1:5009)",
+  "verdict": "CHOP",
+  "points": {
+    "agent1": 0.5,
+    "agent2": 0.5
+  },
+  "reason": "interval [-2.727, +9.727] includes 0",
+  "mean_bb_per_deal": 3.5,
+  "std_bb": 10.047111248734357,
+  "stderr_bb": 3.1771755451099084,
+  "ci": [
+    -2.727264068415421,
+    9.72726406841542
+  ],
+  "chop_z": 1.96,
+  "half_totals_chips": {
+    "half1": {
+      "agent1": 0,
+      "agent2": 0
+    },
+    "half2": {
+      "agent1": 70,
+      "agent2": -70
+    }
+  },
+  "agent_stats": {
+    "agent1": [
+      {
+        "calls": 37,
+        "skipped_calls": 0,
+        "timed_out": false,
+        "errors": 0,
+        "forfeited": false,
+        "error_messages": [],
+        "time_seconds": 0.079769,
+        "wall_seconds": 0.114963
+      },
+      {
+        "calls": 37,
+        "skipped_calls": 0,
+        "timed_out": false,
+        "errors": 0,
+        "forfeited": false,
+        "error_messages": [],
+        "time_seconds": 0.043576,
+        "wall_seconds": 0.076362
+      }
+    ],
+    "agent2": [
+      {
+        "calls": 41,
+        "skipped_calls": 0,
+        "timed_out": false,
+        "errors": 0,
+        "forfeited": false,
+        "error_messages": [],
+        "time_seconds": 0.062442,
+        "wall_seconds": 0.10034
+      },
+      {
+        "calls": 41,
+        "skipped_calls": 0,
+        "timed_out": false,
+        "errors": 0,
+        "forfeited": false,
+        "error_messages": [],
+        "time_seconds": 0.024095,
+        "wall_seconds": 0.059374
+      }
+    ]
+  },
+  "paired_bb": [
+    0.0,
+    -1.0,
+    1.0,
+    0.0,
+    1.0,
+    1.0,
+    32.0,
+    -1.0,
+    1.0,
+    1.0
+  ],
+  "elapsed_seconds": 0.346
+}

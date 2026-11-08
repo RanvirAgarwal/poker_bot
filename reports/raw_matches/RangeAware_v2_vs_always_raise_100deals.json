@@ -1,0 +1,14 @@
+{
+  "candidate": "RangeAware_v2",
+  "opponent": "always_raise",
+  "num_deals": 100,
+  "seed": "milestone_c_eval3_always_raise",
+  "mean_bb": 4.86,
+  "ci": [
+    0.10129456463146358,
+    9.618705435368536
+  ],
+  "std_bb": 24.27910936412519,
+  "verdict": "AGENT1_WIN",
+  "elapsed_seconds": 0.27446508407592773
+}

@@ -1,0 +1,14 @@
+{
+  "candidate": "RangeAware_v2",
+  "opponent": "size_aware_equity",
+  "num_deals": 100,
+  "seed": "milestone_c_eval3_size_aware_equity",
+  "mean_bb": 2.65,
+  "ci": [
+    0.20618477611648212,
+    5.093815223883517
+  ],
+  "std_bb": 12.468445019813867,
+  "verdict": "AGENT1_WIN",
+  "elapsed_seconds": 2.1512115001678467
+}

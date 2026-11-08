@@ -64,3 +64,4 @@ def benchmark_hybrid(deals: int = 100, seed: str = "eval_hybrid"):
 if __name__ == "__main__":
     deals = int(sys.argv[1]) if len(sys.argv) > 1 else 100
     benchmark_hybrid(deals)
+
