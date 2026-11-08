@@ -1,16 +1,16 @@
 {
   "environment": "Host Measurement (Windows 11, Python 3.11, unconstrained)",
-  "cold_start_seconds": 1.0373,
-  "total_requests": 1931,
-  "wall_clock_seconds": 2.119,
-  "charged_time_seconds": 0.6895,
+  "cold_start_seconds": 1.0395,
+  "total_requests": 1911,
+  "wall_clock_seconds": 3.3366,
+  "charged_time_seconds": 1.6766,
   "bank_budget_seconds": 8.0,
-  "bank_margin_seconds": 7.3105,
-  "request_mean_ms": 1.097,
-  "request_p50_ms": 0.921,
-  "request_p95_ms": 2.481,
-  "request_p99_ms": 3.251,
-  "request_max_ms": 18.079,
-  "stress_history_mean_ms": 1.996,
-  "stress_history_max_ms": 2.921
+  "bank_margin_seconds": 6.3234,
+  "request_mean_ms": 1.746,
+  "request_p50_ms": 1.248,
+  "request_p95_ms": 3.919,
+  "request_p99_ms": 5.211,
+  "request_max_ms": 33.059,
+  "stress_history_mean_ms": 4.768,
+  "stress_history_max_ms": 5.83
 }

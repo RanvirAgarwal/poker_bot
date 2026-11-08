@@ -21,13 +21,16 @@ sys.path.insert(0, ROOT_DIR)
 from evaluator import warmup
 from game import Action, AgentConfig, HandResult, Observation
 from opponents.baselines import BASELINE_REGISTRY
+from opponents.adversarial import ADVERSARIAL_REGISTRY
 
 warmup()
 
+ALL_OPPONENTS = {**BASELINE_REGISTRY, **ADVERSARIAL_REGISTRY}
+
 bot_name = os.environ.get("OPPONENT_BOT", "calling_station")
-bot_cls = BASELINE_REGISTRY.get(bot_name)
+bot_cls = ALL_OPPONENTS.get(bot_name)
 if bot_cls is None:
-    raise ValueError(f"Unknown bot: {bot_name}. Available: {list(BASELINE_REGISTRY.keys())}")
+    raise ValueError(f"Unknown bot: {bot_name}. Available: {list(ALL_OPPONENTS.keys())}")
 
 bot = bot_cls()
 PARTICIPANT = "BaselineSuite"

@@ -134,38 +134,35 @@ def profile():
     print(f"Latency P99:    {p99_lat:.2f} ms")
     print(f"Latency Max:    {max_lat:.2f} ms / 1,000.0 ms hard limit (PASS)")
 
-    # 4. Stressful Maximum Legal Raise Cap Lines
-    print("\nStress Testing Maximum Legal Action Histories (4 raises per street cap)...")
-    long_history = []
-    for st in (Street.PREFLOP, Street.FLOP, Street.TURN, Street.RIVER):
-        for r in range(4):
-            long_history.append(ObservedAction(st, True, Action.RAISE_HALF, 2, (r + 1) * 2))
-            long_history.append(ObservedAction(st, False, Action.RAISE_POT, 4, (r + 1) * 4))
+    # 4. Stress Testing Maximum Legal Reachable Action Histories (14 voluntary actions cap)
+    print("\nStress Testing Maximum Reachable Legal Action History (14 voluntary actions cap)...")
+    deal_stress = make_deal("profile_stress_deal", 0)
+    max_legal_actions = [
+        Action.CHECK_CALL,  # 1: SB limp
+        Action.CHECK_CALL,  # 2: BB check
+        Action.CHECK_CALL,  # 3: BB check
+        Action.CHECK_CALL,  # 4: SB check
+        Action.CHECK_CALL,  # 5: BB check
+        Action.RAISE_HALF,   # 6: SB bet half
+        Action.RAISE_HALF,   # 7: BB raise half
+        Action.CHECK_CALL,  # 8: SB call
+        Action.CHECK_CALL,  # 9: BB check
+        Action.RAISE_HALF,   # 10: SB bet half
+        Action.RAISE_HALF,   # 11: BB raise half
+        Action.RAISE_HALF,   # 12: SB raise half
+        Action.RAISE_HALF,   # 13: BB raise half (all in)
+    ]
+    g_stress = Game(deal_stress, button_seat=0, hand_index=999)
+    for act in max_legal_actions:
+        g_stress.apply(act)
 
-    stress_obs = Observation(
-        hand_index=999,
-        street=Street.RIVER,
-        hole_cards=(0, 1, 2, 3, 4),
-        board=(5, 6, 7, 8, 9),
-        pot=150,
-        to_call=10,
-        my_bet=70,
-        opp_bet=80,
-        my_stack=10,
-        opp_stack=0,
-        is_button=False,
-        legal_actions=(Action.FOLD, Action.CHECK_CALL),
-        raise_to={},
-        min_raise_to=0,
-        raises_this_street=4,
-        action_history=tuple(long_history),
-        big_blind=2,
-    )
+    stress_obs = g_stress.observation(g_stress.to_act)
+    assert len(stress_obs.action_history) == 13
 
     t_stress_0 = time.perf_counter()
     stress_act = policy.choose_action(stress_obs, memory)
     t_stress_ms = (time.perf_counter() - t_stress_0) * 1000.0
-    print(f"32-Action Deep History Latency: {t_stress_ms:.2f} ms -> Action chosen: {stress_act.name} (PASS)")
+    print(f"Max Reachable Legal History Latency (13 prior actions): {t_stress_ms:.2f} ms -> Action chosen: {stress_act.name} (PASS)")
 
     # 5. Charged time bank projection
     # In official matches, average decisions per half is ~3,300.

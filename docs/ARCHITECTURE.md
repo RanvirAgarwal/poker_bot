@@ -29,11 +29,14 @@
         \                                 /
          v                               v
 +--------------------------------------------------------------------------+
-| runtime/policy (Current: HeuristicPolicy, Planned: CFR-trained)          |
-| - Equity-based decisions                                                 |
-| - Pot odds calculations                                                  |
-| - Mixed strategy sampling                                                |
-| - Legal action masking & fallback                                        |
+| runtime/policy (Current: RangeAwarePolicy [RangeAware_v2],               |
+|                 Rollback: HeuristicPolicy [EquityBot_v1])                |
+| - Action-conditioned range likelihood weighting                          |
+| - Street-separated Bayesian aggression tracking (pf_rate, post_rate)     |
+| - Continuation range equity filtering                                    |
+| - Protected check-trapping (20% OOP with monsters on flop/turn)          |
+| - Mixed value sizing (65% pot / 35% half-pot)                            |
+| - Pot odds calculations & legal action masking fallback                  |
 +--------------------------------------------------------------------------+
 ```
 
@@ -41,21 +44,33 @@
 
 ```
 poker_bot/
-├── agent.py               # Tournament entry point (FastAPI web server)
+├── agent.py               # Tournament entry point (FastAPI web server, TeamAntigravity / RangeAware_v2)
 ├── runtime/               # Strategy execution modules
-│   ├── features.py        # Observation -> feature vectors
-│   ├── policy.py          # Strategy implementations
+│   ├── range_aware_policy.py # Active tournament candidate (RangeAware_v2)
+│   ├── policy.py          # Preserved baseline rollback candidate (EquityBot_v1)
+│   ├── ablations.py       # Isolated ablation variants
+│   ├── features.py        # Observation -> feature vectors, Monte Carlo sampling
 │   └── opponent.py        # Within-half opponent tracking
 ├── training/              # CFR and RL training (offline)
+│   ├── generic_mccfr.py   # Game-agnostic ES-MCCFR engine
+│   ├── kuhn_exact.py      # Analytical ground truth & exact NashConv / Best-Response
+│   ├── mccfr.py           # PLO5 MCCFR delegating to GenericMCCFRTrainer
+│   └── abstraction.py     # Preflop & postflop card abstractions
 ├── opponents/             # Independent test opponents
-│   └── baselines.py       # CheckFold, CallingStation, Random, EquityCall
+│   ├── baselines.py       # Complete 12-opponent population (CallingStation, ACR, etc.)
+│   ├── adversarial.py     # 9 targeted stress opponents (Threshold, StreetInversion, Trap)
+│   └── serve_opponent.py  # Standalone HTTP runner for isolated match refereeing
 ├── evaluation/            # Benchmarking and scoring
-│   └── local_match.py     # Fast local duplicate match runner
+│   ├── local_match.py     # Fast local duplicate match runner
+│   ├── compare_continuation_filter.py # 1000-deal duplicate continuation filter comparison
+│   ├── profile_http_runtime.py # Exact charged time-bank measurement over HTTP
+│   └── summary_table.py   # Programmatic score calculation directly from verdicts
 ├── assets/                # Serialized models / lookup tables
 ├── tests/                 # Correctness & regression tests
 │   ├── test_rules.py      # Rule and evaluator verification
-│   └── test_agent_protocol.py  # HTTP protocol compliance
-├── reports/               # Experiment logs and match results
+│   ├── test_agent_protocol.py # HTTP protocol compliance
+│   └── test_harness_agreement.py # Bit-for-bit local vs HTTP agreement verification
+├── reports/               # Experiment logs and match results (milestone_a..e)
 ├── docs/                  # Architecture & decisions
 │   ├── ARCHITECTURE.md    # This file
 │   └── DECISIONS.md       # Decision log

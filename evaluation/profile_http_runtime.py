@@ -39,14 +39,16 @@ class HTTPBenchClient:
         self.host = host
         self.port = port
         self._conn: Optional[http.client.HTTPConnection] = None
-        self.request_latencies: List[float] = []
+        self.health_latencies: List[float] = []
+        self.half_charged_latencies: List[float] = []
+        self.stress_latencies: List[float] = []
 
     def _get_conn(self) -> http.client.HTTPConnection:
         if self._conn is None:
             self._conn = http.client.HTTPConnection(self.host, self.port, timeout=2.0)
         return self._conn
 
-    def request(self, method: str, path: str, body: Optional[dict] = None) -> tuple[int, Any, float]:
+    def request(self, method: str, path: str, body: Optional[dict] = None, category: str = "half") -> tuple[int, Any, float]:
         conn = self._get_conn()
         payload = json.dumps(body) if body is not None else None
         headers = {"Content-Type": "application/json"}
@@ -61,7 +63,13 @@ class HTTPBenchClient:
             self._conn = None
             raise
 
-        self.request_latencies.append(elapsed)
+        if category == "health":
+            self.health_latencies.append(elapsed)
+        elif category == "half":
+            self.half_charged_latencies.append(elapsed)
+        elif category == "stress":
+            self.stress_latencies.append(elapsed)
+
         data = json.loads(raw) if raw else None
         return resp.status, data, elapsed
 
@@ -89,11 +97,11 @@ def profile_http_runtime(port: int = 5025):
     client = HTTPBenchClient(port=port)
     cold_start_s = 0.0
     try:
-        # 1. Measure cold start via health checks until ready
+        # 1. Measure cold start via health checks until ready (measured separately from thinking bank)
         ready = False
         for _ in range(60):
             try:
-                st, data, el = client.request("GET", "/")
+                st, data, el = client.request("GET", "/", category="health")
                 if st == 200:
                     ready = True
                     cold_start_s = time.perf_counter() - t_launch
@@ -106,10 +114,9 @@ def profile_http_runtime(port: int = 5025):
 
         print(f"\n[1] Cold Start (Process spawn -> Warmup -> Ready on HTTP): {cold_start_s:.3f}s / 15.0s budget (PASS)")
 
-        # 2. Start a half: POST /new-half
-        client.request_latencies.clear()
+        # 2. Start a half: POST /new-half (charged to the thinking bank)
         cfg = AgentConfig(num_hands=1000)
-        st, data, el_new_half = client.request("POST", "/new-half", {"config": cfg.to_dict()})
+        st, data, el_new_half = client.request("POST", "/new-half", {"config": cfg.to_dict()}, category="half")
         assert st == 200, f"/new-half returned {st}: {data}"
 
         # 3. Simulate a realistic full half of 1,000 deals (approx 2,000 decisions) over HTTP
@@ -185,7 +192,7 @@ def profile_http_runtime(port: int = 5025):
                 }
                 batched_results = []
 
-                st, reply, _ = client.request("POST", "/act", req_body)
+                st, reply, _ = client.request("POST", "/act", req_body, category="half")
                 assert st == 200, f"/act returned {st}: {reply}"
                 assert "action" in reply
                 total_requests += 1
@@ -202,57 +209,58 @@ def profile_http_runtime(port: int = 5025):
             )
             batched_results.append(hr.to_dict())
 
-        # Flush remaining hand results at half end
+        # Flush remaining hand results at half end (charged to the bank per judge_engine.flush_hand_results)
         if batched_results:
-            st, reply, _ = client.request("POST", "/hand-end", {"results": batched_results})
+            st, reply, _ = client.request("POST", "/hand-end", {"results": batched_results}, category="half")
             assert st == 200
 
-        # 4. Stress Test: Deep 32-Action Maximum Legal History over HTTP
-        print("\n[3] Stress Testing Maximum Legal History (32 legal actions) over HTTP...")
-        long_history = []
-        for st_enum in (Street.PREFLOP, Street.FLOP, Street.TURN, Street.RIVER):
-            for r in range(4):
-                long_history.append(ObservedAction(st_enum, True, Action.RAISE_HALF, 2, (r + 1) * 2))
-                long_history.append(ObservedAction(st_enum, False, Action.RAISE_POT, 4, (r + 1) * 4))
+        # 4. Stress Test: Maximum Reachable Legal History (14-action cap) generated from official Game engine
+        print("\n[3] Stress Testing Maximum Reachable Legal History (14-action cap) over HTTP...")
+        deal_stress = make_deal("profile_stress_deal", 0)
+        max_legal_actions = [
+            Action.CHECK_CALL,  # 1: SB limp
+            Action.CHECK_CALL,  # 2: BB check
+            Action.CHECK_CALL,  # 3: BB check
+            Action.CHECK_CALL,  # 4: SB check
+            Action.CHECK_CALL,  # 5: BB check
+            Action.RAISE_HALF,   # 6: SB bet half
+            Action.RAISE_HALF,   # 7: BB raise half
+            Action.CHECK_CALL,  # 8: SB call
+            Action.CHECK_CALL,  # 9: BB check
+            Action.RAISE_HALF,   # 10: SB bet half
+            Action.RAISE_HALF,   # 11: BB raise half
+            Action.RAISE_HALF,   # 12: SB raise half
+            Action.RAISE_HALF,   # 13: BB raise half (all in)
+        ]
+        g_stress = Game(deal_stress, button_seat=0, hand_index=999)
+        for act in max_legal_actions:
+            g_stress.apply(act)
 
-        stress_obs = Observation(
-            hand_index=999,
-            street=Street.RIVER,
-            hole_cards=(0, 1, 2, 3, 4),
-            board=(5, 6, 7, 8, 9),
-            pot=150,
-            to_call=10,
-            my_bet=70,
-            opp_bet=80,
-            my_stack=10,
-            opp_stack=0,
-            is_button=False,
-            legal_actions=(Action.FOLD, Action.CHECK_CALL),
-            raise_to={},
-            min_raise_to=0,
-            raises_this_street=4,
-            action_history=tuple(long_history),
-            big_blind=2,
-        )
+        stress_obs = g_stress.observation(g_stress.to_act)
+        assert len(stress_obs.action_history) == 13
 
         stress_req_times = []
         for _ in range(20):
-            st, reply, el_stress = client.request("POST", "/act", {"observation": stress_obs.to_dict(), "hand_results": []})
+            st, reply, el_stress = client.request(
+                "POST", "/act",
+                {"observation": stress_obs.to_dict(), "hand_results": []},
+                category="stress"
+            )
             assert st == 200
             stress_req_times.append(el_stress * 1000.0)
 
         mean_stress_ms = statistics.mean(stress_req_times)
         max_stress_ms = max(stress_req_times)
-        print(f"32-Action Deep History Request Latency: Mean={mean_stress_ms:.2f} ms, Max={max_stress_ms:.2f} ms (PASS)")
+        print(f"Max Reachable Legal History (13 prior actions) Request Latency: Mean={mean_stress_ms:.2f} ms, Max={max_stress_ms:.2f} ms (PASS)")
 
-        # 5. Compute Exact Charged Time Bank
-        all_lats_s = client.request_latencies
-        wall_time_s = sum(all_lats_s)
+        # 5. Compute Exact Charged Time Bank for the 1,000-Deal Half (POST requests only)
+        half_lats_s = client.half_charged_latencies
+        wall_time_s = sum(half_lats_s)
         # EXACT OFFICIAL FORMULA: sum(max(0, req - 0.001))
-        charged_time_s = sum(max(0.0, t - 0.001) for t in all_lats_s)
-        n_reqs = len(all_lats_s)
+        charged_time_s = sum(max(0.0, t - 0.001) for t in half_lats_s)
+        n_reqs = len(half_lats_s)
 
-        lats_ms = [t * 1000.0 for t in all_lats_s]
+        lats_ms = [t * 1000.0 for t in half_lats_s]
         sorted_ms = sorted(lats_ms)
         p50 = statistics.median(lats_ms)
         p95 = sorted_ms[int(0.95 * len(sorted_ms))]
@@ -263,7 +271,8 @@ def profile_http_runtime(port: int = 5025):
         print("\n" + "=" * 80)
         print("EXACT CHARGED TIME BANK SUMMARY (HOST MEASUREMENT)")
         print("=" * 80)
-        print(f"Total Requests:             {n_reqs}")
+        print(f"Startup Health Checks:      {len(client.health_latencies)} reqs (excluded from bank)")
+        print(f"Total Half POST Requests:   {n_reqs}")
         print(f"Total Wall Clock Time:      {wall_time_s:.3f} s")
         print(f"Exact Charged Bank Used:    {charged_time_s:.3f} s / 8.000 s budget (PASS)")
         print(f"Bank Remaining:             {8.000 - charged_time_s:.3f} s ({(8.000 - charged_time_s) / 8.000 * 100:.1f}%)")
@@ -272,7 +281,7 @@ def profile_http_runtime(port: int = 5025):
         print(f"Per-Request P95 Latency:    {p95:.2f} ms")
         print(f"Per-Request P99 Latency:    {p99:.2f} ms")
         print(f"Per-Request Max Latency:    {max_req_ms:.2f} ms / 1000.0 ms limit (PASS)")
-        print(f"Zero-Grace Charged Req:     {sum(1 for t in all_lats_s if t <= 0.001)} / {n_reqs} requests ({(sum(1 for t in all_lats_s if t <= 0.001) / n_reqs) * 100:.1f}%) free under 1ms grace")
+        print(f"Zero-Grace Charged Req:     {sum(1 for t in half_lats_s if t <= 0.001)} / {n_reqs} requests ({(sum(1 for t in half_lats_s if t <= 0.001) / n_reqs) * 100:.1f}%) free under 1ms grace")
         print("=" * 80)
 
         # Save profile metrics

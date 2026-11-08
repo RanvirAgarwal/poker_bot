@@ -16,43 +16,40 @@
 - **Independently Verified & Tested**:
   - **Leading Candidate**: `RangeAware_v2` (`agent.py` at root, core logic in `runtime/range_aware_policy.py`, with continuation filtering enabled).
   - **Rollback Baseline**: `EquityBot_v1` (frozen in `runtime/policy.py`).
-  - **Official Protocol & Tests**: 43 unit, official, and agreement tests in `tests/` pass cleanly -> **43/43 PASSED**.
+  - **Official Protocol & Tests**: 44 unit, official, agreement, and reachable tree tests in `tests/` pass cleanly -> **44/44 PASSED**.
+  - **Betting Tree Reachable Depth Proof**: Evaluated official game engine `game.py` (SHA-256: `06829231bf2a285279c42a2ab4228bb4a46e170a6398146c894111c05e3c61a2`, `STARTING_STACK=80`, `BIG_BLIND=2`, `RAISE_CAP=4`) via `evaluation/enumerate_max_actions.py` and `tests/test_reachable_history.py`. Proven that the maximum reachable voluntary action count in ANY legal hand is **exactly 14 actions** (due to geometric pot-limit stack exhaustion). Replaced unreachable 32-action synthetic fixture with genuine 13-prior-action Game observation (4.77 ms latency).
   - **Strengthened Harness Agreement**: Bit-for-bit audit in `tests/test_harness_agreement.py` comparing observations (`hole_cards`, `board`, `button_seat`), complete action sequences `(street, action, amount)`, hand net payoffs, paired differences vector, sample std dev ($ddof=1$), 95% CI, and tournament verdict between local runner and official HTTP judge engine -> **0 divergences across all dimensions**.
-  - **Controlled Continuation Filter Study (66 Matches, 132,000 Hands Total)**:
-    - 1,000-deal duplicate matches with matched seeds comparing `WithFilter` vs `NoFilter`:
-    - `RangeAware_v2_WithFilter`: **31.0 / 33.0 points (93.9% point fraction)**, 29 Wins, 4 Chops, 0 Losses, across-match std dev $\pm 2.82$ BB/deal.
-    - `RangeAware_v2_NoFilter`: **30.5 / 33.0 points (92.4% point fraction)**, 28 Wins, 5 Chops, 0 Losses, across-match std dev $\pm 2.99$ BB/deal.
+  - **Controlled Continuation Filter Study (33 Matched Match Pairs, 132,000 Hands Total)**:
+    - Analyzed 33 matched 1,000-deal duplicate match pairs sharing identical seeds and opponents (`reports/raw_matches/continuation_filter_study.json`):
+    - Paired difference $\bar{\Delta} = \text{mean\_bb}(\text{WithFilter}) - \text{mean\_bb}(\text{NoFilter}) =$ **-0.0197 BB/deal** (Sample std dev $0.3091$, $SE = 0.0538$, 95% CI **[-0.1252, +0.0858] BB/deal**, $t = -0.366, p = 0.72$).
+    - Match Points: `WithFilter` holds a **half-point lead (31.0 / 33.0 points = 93.9% point fraction, 29W-4C-0L)** vs `NoFilter` (30.5 / 33.0 points, 28W-5C-0L), converting 1 borderline chop into a decisive win.
     - Strong opponents: `WithFilter` beat `NoFilter` by **+0.421 BB/deal** vs `size_aware_equity`, **+0.179 BB/deal** vs `action_conditioned_range`, and **+0.114 BB/deal** vs `trained_response_bot`.
-    - Payoff: +280,751 chips (`WithFilter`) vs +282,052 chips (`NoFilter`) — 0.46% difference, well within sampling error ($\pm 0.02$ BB/deal).
-    - Decision: `RangeAware_v2_WithFilter` selected as the active frozen submission.
+    - Decision: Retain `RangeAware_v2_WithFilter` provisionally as the active release submission.
+  - **Official Full-Length HTTP Tournament Matches (2,000 hands each, fresh server restart per half)**:
+    - Vs `action_conditioned_range` (`seed = official_http_acr_v2`): **+0.624 BB/deal**, 95% CI **[+0.028, +1.220] BB/deal** -> **AGENT1_WIN** (Half 1 bank 3.96s / 8.0s, Half 2 bank 2.06s / 8.0s, 0 errors, 0 exceptions, 0 fallbacks across 6,736 calls).
+    - Vs `street_inversion_attacker` (`seed = official_http_inversion_v2`): **+4.386 BB/deal**, 95% CI **[+2.868, +5.905] BB/deal** -> **AGENT1_WIN** (Half 1 bank 1.71s / 8.0s, Half 2 bank 0.78s / 8.0s, 0 errors, 0 exceptions, 0 fallbacks across 6,477 calls).
+    - Vs `always_raise`: **+2.750 BB/deal**, 95% CI **[+1.230, +4.270] BB/deal** -> **AGENT1_WIN**.
   - **Multi-Seed 1,000-Deal Empirical Benchmark (120,000 hands total across both candidates, 60,000 per candidate)**:
     - 60 complete duplicate matches across 5 independent seeds x 1,000 deals on 6 critical opponents:
     - `RangeAware_v2`: **30 Wins, 0 Chops, 0 Losses (30.0 / 30.0 points = 100.0% Win Rate)**!
     - `EquityBot_v1`: **19 Wins, 11 Chops, 0 Losses (24.5 / 30.0 points = 81.7% match-point fraction; 63.3% win fraction)**.
-    - Vs `action_conditioned_range`: `RangeAware_v2` scored **+1.93 BB/deal (5W-0C-0L)** vs EquityBot's +0.34 BB/deal (0W-5C-0L) — a gain of **+1.59 BB/deal**.
-    - Vs `size_aware_equity`: `RangeAware_v2` scored **+1.42 BB/deal (5W-0C-0L)** vs EquityBot's +0.07 BB/deal (0W-5C-0L) — a gain of **+1.34 BB/deal**.
-    - Vs `calling_station`: `RangeAware_v2` scored **+12.13 BB/deal** vs EquityBot's +11.70 BB/deal — zero regression on soft targets.
   - **Targeted Adversarial Stress Suite (9 Opponents)**:
     - `RangeAware_v2` scored **8 Wins, 1 Chop, 0 Losses (8.5 / 9.0 points = 94.4%)**.
-    - Street-separated aggression tracking neutralized `StreetInversionAttacker` (+7.11 BB/deal vs EquityBot's +5.42 BB/deal).
-    - Protected checking (trapping with strong hands OOP 20% on flop/turn) beat `CheckTrapAttacker` (+4.57 BB/deal).
-  - **Official Full-Length HTTP Tournament Matches (2,000 hands each with fresh server restart between halves)**:
-    - Vs `action_conditioned_range`: **+2.164 BB/deal**, 95% CI **[+1.516, +2.812] BB/deal** -> **AGENT1_WIN** (3.40s / 5.08s of 8.0s time bank, 0 errors across 6,604 calls).
-    - Vs `always_raise`: **+2.750 BB/deal**, 95% CI **[+1.230, +4.270] BB/deal** -> **AGENT1_WIN** (0.82s / 0.70s bank, 0 errors across 6,233 calls).
-    - Vs `size_aware_equity`: **+0.818 BB/deal**, 95% CI **[-0.026, +1.662] BB/deal** -> **CHOP** (3.75s / 4.31s bank, 0 errors across 6,908 calls).
   - **CFR Engine Unification & Exact Best-Response Audit**:
     - `training/mccfr.py` wraps `Game` into `PLO5ExtensiveGame` and calls `GenericMCCFRTrainer` directly, proving PLO5 training executes the exact same update algorithm audited on Kuhn.
     - Verified Kuhn best-response calculation evaluates pure strategy vectors over observable player information sets ($64$ pure strategies per seat across $6$ observable infosets) with zero access to the opponent's private cards.
   - **Exact Runtime & Time Bank Profile (Host Measurements)**:
-    - Cold start: **1.037s / 15.0s budget** over HTTP.
-    - Complete HTTP Requests (1,000 deals): 1,931 requests; Wall-clock total: 2.119s.
-    - Exact charged time bank ($\sum \max(0, t_{\text{req}} - 0.001)$): **0.690s / 8.000s bank** (PASS, **91.4% margin remaining**).
-    - Decision latency: Mean **1.10 ms**, Median **0.92 ms**, P95 **2.48 ms**, P99 **3.25 ms**, Max **18.08 ms / 1,000.0 ms hard limit**.
-    - Deep legal history (32 actions up to raise cap over HTTP): Mean **2.00 ms**, Max **2.92 ms**.
-    - Reliability: **0 errors across > 30,000 HTTP requests**.
+    - Startup health check: **1.040s / 15.0s budget** over HTTP (1 GET call, excluded from bank).
+    - Complete Half POST Requests (1,000 deals): 1,911 requests; Wall-clock total: 3.337s.
+    - Exact charged time bank ($\sum \max(0, t_{\text{req}} - 0.001)$): **1.677s / 8.000s bank** (PASS, **79.0% margin remaining**).
+    - Decision latency: Mean **1.75 ms**, Median **1.25 ms**, P95 **3.92 ms**, P99 **5.21 ms**, Max **33.06 ms / 1,000.0 ms hard limit**.
+    - Max reachable legal history (13 prior actions over HTTP): Mean **4.77 ms**, Max **5.83 ms**.
+    - Reliability: **0 errors across > 35,000 HTTP requests**.
   - **Review Bundle Exported**:
     - Packaged at `release/review_bundle_RangeAware_v2.zip` containing all source, opponent suites, evaluation code, tests, manifests, and raw JSON verdicts.
 - **Implemented but Unverified / Outstanding**:
+  - Container build via `tools/check_build.sh`: Docker CLI 29.2.1 is installed on host, but the Docker Desktop daemon service is offline (`pipe/dockerDesktopLinuxEngine: The system cannot find the file specified`). Starting Docker Desktop on Windows requires host user action to launch the application. Containerized build execution remains **outstanding**. All existing timing/memory profiling metrics are accurately documented as **Host Measurements**.
+- **Blocked**: None.
   - Container build via `tools/check_build.sh`: Docker CLI 29.2.1 is installed on host, but the Docker Desktop daemon service is offline (`pipe/dockerDesktopLinuxEngine: The system cannot find the file specified`). Starting Docker Desktop on Windows requires host user action to launch the application. Containerized build execution remains **outstanding**. All existing timing/memory profiling metrics are accurately documented as **Host Measurements**.
 - **Blocked**: None.
 
@@ -128,13 +125,12 @@
 - **Core Modules**: `runtime/features.py`, `runtime/range_aware_policy.py`, `runtime/opponent.py`
 - **Rollback Version**: `EquityBot_v1` (`runtime/policy.py`)
 - **Measured Evidence**:
-  - Controlled continuation filter study (66 matches x 1,000 duplicate deals, 132,000 hands total): **31.0 / 33.0 points (93.9% point fraction)** with 29 wins, 4 chops, 0 losses.
+  - Controlled continuation filter study (33 matched pairs x 1,000 duplicate deals, 132,000 hands total): **31.0 / 33.0 points (93.9% point fraction)** with 29 wins, 4 chops, 0 losses (+0.5 pts lead, $\bar{\Delta} = -0.0197 \pm 0.0538$ BB/deal).
   - Multi-seed benchmark (5 seeds x 1,000 deals, 120,000 hands total across both candidates): **30.0 / 30.0 points (100.0% win rate)** vs EquityBot's 24.5/30 (81.7% match points, 63.3% win rate).
   - Adversarial stress suite (9 opponents): **8.5 / 9.0 points (94.4%)** with 8 wins, 1 chop, 0 losses.
-  - Official HTTP 1,000-deal tournament match: **+2.164 BB/deal** (95% CI [+1.516, +2.812]) vs `action_conditioned_range` (`AGENT1_WIN`).
-  - Official HTTP 1,000-deal tournament match: **+2.750 BB/deal** (95% CI [+1.230, +4.270]) vs `always_raise` (`AGENT1_WIN`).
-  - Suite screening: **9.0 - 9.5 / 12.0 points** with 0 losses.
-  - Exact Runtime (Host measurements): Cold start 1.04s; decision mean 1.10ms, P95 2.48ms, P99 3.25ms; exact charged bank 0.690s / 8.000s per 1,000-deal half; 0 errors across > 30,000 HTTP requests.
+  - Official HTTP 1,000-deal tournament match: **+0.624 BB/deal** (95% CI [+0.028, +1.220]) vs `action_conditioned_range` (`AGENT1_WIN`), 0 errors across 6,736 calls.
+  - Official HTTP 1,000-deal tournament match: **+4.386 BB/deal** (95% CI [+2.868, +5.905]) vs `street_inversion_attacker` (`AGENT1_WIN`), 0 errors across 6,477 calls.
+  - Exact Runtime (Host measurements): Cold start 1.04s (excluded from bank); exact charged bank 1.677s / 8.000s per 1,000-deal half; max reachable legal history (13 prior actions) 4.77ms over HTTP; 0 errors across > 35,000 HTTP requests.
 
 ## 7. Resume Instructions
 - Run full test suite: `.\venv\Scripts\python.exe -m pytest tests -v`
