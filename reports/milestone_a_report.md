@@ -62,3 +62,4 @@ We implemented an External-Sampling Monte Carlo Counterfactual Regret Minimizati
   - `CFRBot_v1` (2k iterations) achieved 3 wins / 2 chops vs `EquityBot_v1`'s 5 wins / 0 chops.
   - Reason: 2,000 iterations is insufficient for 48,000+ infosets (~1-2 visits per node); regrets have not yet converged.
 - **Decision**: Keep `EquityBot_v1` as the active tournament candidate in `agent.py` based on empirical evidence, while continuing CFR training scaling offline.
+

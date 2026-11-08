@@ -51,3 +51,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     train(iterations=args.iterations, checkpoint_path=args.checkpoint, log_interval=args.log_interval)
+

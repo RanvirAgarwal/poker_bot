@@ -37,3 +37,4 @@ cd c:\Users\ranvi\poker_bot
 - Primary objective: Win or Chop (CI not strictly below 0)
 - Zero rule violations or protocol errors (`errors == 0`)
 - Charged thinking time bank consumption under 5.0 seconds per half
+

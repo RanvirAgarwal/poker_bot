@@ -20,3 +20,4 @@ Currently the baseline heuristic policy (`HeuristicPolicy` in `runtime/policy.py
 ## Checkpoint Protocol
 - Checkpoints saved under `assets/`
 - Every run logs git commit, seed, iteration count, exploitability against baseline benchmarks
+

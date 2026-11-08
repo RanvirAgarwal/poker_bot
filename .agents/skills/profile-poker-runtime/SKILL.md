@@ -24,3 +24,4 @@ Monitors computational constraints:
 ## Failure Handling
 - If warmup exceeds 10s: precompute static lookup tables into binary files or serialized artifacts.
 - If postflop equity estimation exceeds 5ms per decision: reduce Monte Carlo sample count or add memoization on card bitmasks.
+

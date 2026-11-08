@@ -151,3 +151,4 @@ class MCCFRTrainer:
         self.strategy_sum.clear()
         for k, v in model["strategy_sum"].items():
             self.strategy_sum[k].update(v)
+

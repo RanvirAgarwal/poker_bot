@@ -24,3 +24,4 @@ Maintains persistent project memory across conversations, resets, and compaction
 7. Best working candidate
 8. Active work
 9. Resume instructions (exact verified commands)
+
