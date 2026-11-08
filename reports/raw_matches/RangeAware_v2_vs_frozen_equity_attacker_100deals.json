@@ -2,13 +2,13 @@
   "candidate": "RangeAware_v2",
   "opponent": "frozen_equity_attacker",
   "num_deals": 100,
-  "seed": "milestone_c_eval3_frozen_equity_attacker",
-  "mean_bb": -1.25,
+  "seed": "milestone_d_eval_frozen_equity_attacker",
+  "mean_bb": -0.85,
   "ci": [
-    -3.015511697937897,
-    0.5155116979378966
+    -3.0399073823872884,
+    1.3399073823872882
   ],
-  "std_bb": 9.007712744581106,
+  "std_bb": 11.172996848914735,
   "verdict": "CHOP",
-  "elapsed_seconds": 0.45434021949768066
+  "elapsed_seconds": 0.19998717308044434
 }

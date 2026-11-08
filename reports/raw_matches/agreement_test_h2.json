@@ -1,0 +1,60 @@
+{
+  "kind": "half_result",
+  "half": 2,
+  "match_seed": "agreement_audit_seed_42",
+  "num_deals": 10,
+  "agent1_seat": 1,
+  "agent1_name": "TeamAntigravity / RangeAware_v2 (http://127.0.0.1:5011)",
+  "agent2_name": "BaselineSuite / Bot_calling_station (http://127.0.0.1:5012)",
+  "total_chips": {
+    "agent1": 184,
+    "agent2": -184
+  },
+  "agent_stats": {
+    "agent1": {
+      "calls": 42,
+      "skipped_calls": 0,
+      "timed_out": false,
+      "errors": 0,
+      "forfeited": false,
+      "error_messages": [],
+      "time_seconds": 0.153132,
+      "wall_seconds": 0.195132
+    },
+    "agent2": {
+      "calls": 54,
+      "skipped_calls": 0,
+      "timed_out": false,
+      "errors": 0,
+      "forfeited": false,
+      "error_messages": [],
+      "time_seconds": 0.023408,
+      "wall_seconds": 0.077151
+    }
+  },
+  "nets_agent1": [
+    -4,
+    -6,
+    -8,
+    80,
+    8,
+    -12,
+    72,
+    18,
+    36,
+    0
+  ],
+  "nets_agent2": [
+    4,
+    6,
+    8,
+    -80,
+    -8,
+    12,
+    -72,
+    -18,
+    -36,
+    0
+  ],
+  "elapsed_seconds": 0.275
+}

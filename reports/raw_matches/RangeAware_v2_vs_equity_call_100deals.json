@@ -2,13 +2,13 @@
   "candidate": "RangeAware_v2",
   "opponent": "equity_call",
   "num_deals": 100,
-  "seed": "milestone_c_eval3_equity_call",
-  "mean_bb": 0.86,
+  "seed": "milestone_d_eval_equity_call",
+  "mean_bb": 2.03,
   "ci": [
-    -1.3182960272245419,
-    3.0382960272245416
+    0.27815051105433386,
+    3.7818494889456655
   ],
-  "std_bb": 11.11375524094154,
-  "verdict": "CHOP",
-  "elapsed_seconds": 1.9565134048461914
+  "std_bb": 8.938007596661562,
+  "verdict": "AGENT1_WIN",
+  "elapsed_seconds": 0.7913141250610352
 }

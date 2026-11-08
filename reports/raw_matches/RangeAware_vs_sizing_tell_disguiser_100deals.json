@@ -1,0 +1,12 @@
+{
+  "candidate": "RangeAware_v2",
+  "opponent": "sizing_tell_disguiser",
+  "deals": 100,
+  "seed": "adv_eval_sizing_tell_disguiser",
+  "mean_bb": 3.675,
+  "ci": [
+    0.5518214277855655,
+    6.798178572214434
+  ],
+  "verdict": "AGENT1_WIN"
+}

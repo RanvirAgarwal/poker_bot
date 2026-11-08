@@ -1,0 +1,30 @@
+{
+  "1_EquityOnly": {
+    "calling_station": 7.33,
+    "always_raise": 6.45,
+    "action_conditioned_range": 1.27,
+    "street_inversion_attacker": 7.87,
+    "check_trap_attacker": 0.075
+  },
+  "2_RangeOnly": {
+    "calling_station": 11.68,
+    "always_raise": 1.2,
+    "action_conditioned_range": 2.64,
+    "street_inversion_attacker": 3.36,
+    "check_trap_attacker": 2.865
+  },
+  "3_RangeAndAdapt": {
+    "calling_station": 11.68,
+    "always_raise": 3.24,
+    "action_conditioned_range": 2.97,
+    "street_inversion_attacker": 1.0,
+    "check_trap_attacker": 7.08
+  },
+  "4_Complete_v2": {
+    "calling_station": 10.93,
+    "always_raise": 3.24,
+    "action_conditioned_range": 2.41,
+    "street_inversion_attacker": 2.75,
+    "check_trap_attacker": 3.285
+  }
+}

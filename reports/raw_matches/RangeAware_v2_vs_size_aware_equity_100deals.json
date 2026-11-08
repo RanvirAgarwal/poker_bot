@@ -2,13 +2,13 @@
   "candidate": "RangeAware_v2",
   "opponent": "size_aware_equity",
   "num_deals": 100,
-  "seed": "milestone_c_eval3_size_aware_equity",
-  "mean_bb": 2.65,
+  "seed": "milestone_d_eval_size_aware_equity",
+  "mean_bb": 0.75,
   "ci": [
-    0.20618477611648212,
-    5.093815223883517
+    -1.8998102009408333,
+    3.3998102009408333
   ],
-  "std_bb": 12.468445019813867,
-  "verdict": "AGENT1_WIN",
-  "elapsed_seconds": 2.1512115001678467
+  "std_bb": 13.519439800718539,
+  "verdict": "CHOP",
+  "elapsed_seconds": 0.8796944618225098
 }

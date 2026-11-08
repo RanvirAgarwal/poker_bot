@@ -2,13 +2,13 @@
   "candidate": "RangeAware_v2",
   "opponent": "guide_cheap_call",
   "num_deals": 100,
-  "seed": "milestone_c_eval3_guide_cheap_call",
-  "mean_bb": 2.93,
+  "seed": "milestone_d_eval_guide_cheap_call",
+  "mean_bb": 2.11,
   "ci": [
-    2.4116161073084736,
-    3.4483838926915267
+    1.543925901270403,
+    2.676074098729597
   ],
-  "std_bb": 2.6448157790384013,
+  "std_bb": 2.888133156783657,
   "verdict": "AGENT1_WIN",
-  "elapsed_seconds": 0.8684682846069336
+  "elapsed_seconds": 0.6238112449645996
 }

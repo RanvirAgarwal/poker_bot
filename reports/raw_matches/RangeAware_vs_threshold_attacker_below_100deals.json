@@ -1,0 +1,12 @@
+{
+  "candidate": "RangeAware_v2",
+  "opponent": "threshold_attacker_below",
+  "deals": 100,
+  "seed": "adv_eval_threshold_attacker_below",
+  "mean_bb": 8.87,
+  "ci": [
+    3.269532864938042,
+    14.470467135061956
+  ],
+  "verdict": "AGENT1_WIN"
+}

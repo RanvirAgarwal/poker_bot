@@ -2,13 +2,13 @@
   "candidate": "EquityBot_v1",
   "opponent": "calling_station",
   "num_deals": 100,
-  "seed": "milestone_c_eval3_calling_station",
-  "mean_bb": 9.675,
+  "seed": "milestone_d_eval_calling_station",
+  "mean_bb": 12.55,
   "ci": [
-    6.294401722006635,
-    13.055598277993367
+    9.721137995160557,
+    15.378862004839444
   ],
-  "std_bb": 17.24795039792534,
+  "std_bb": 14.432969412446147,
   "verdict": "AGENT1_WIN",
-  "elapsed_seconds": 1.2113192081451416
+  "elapsed_seconds": 0.5471322536468506
 }

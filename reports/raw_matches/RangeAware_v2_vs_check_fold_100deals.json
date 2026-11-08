@@ -2,13 +2,13 @@
   "candidate": "RangeAware_v2",
   "opponent": "check_fold",
   "num_deals": 100,
-  "seed": "milestone_c_eval3_check_fold",
-  "mean_bb": 1.38,
+  "seed": "milestone_d_eval_check_fold",
+  "mean_bb": 1.34,
   "ci": [
-    1.2906797295846528,
-    1.469320270415347
+    1.2368116833800034,
+    1.4431883166199968
   ],
-  "std_bb": 0.4557156653844233,
+  "std_bb": 0.5264710031632485,
   "verdict": "AGENT1_WIN",
-  "elapsed_seconds": 0.08194637298583984
+  "elapsed_seconds": 0.11657357215881348
 }

@@ -32,14 +32,16 @@ class RangeAwarePolicy:
         self.aggression = aggression
         self.rng = random.Random(seed)
 
-    def _update_memory_opp_stats(self, obs: Observation, memory: dict) -> float:
-        """Update and return opponent aggression rate from memory.
+    def _update_memory_opp_stats(self, obs: Observation, memory: dict) -> Tuple[float, float]:
+        """Update and return (preflop_raise_rate, postflop_raise_rate) from memory.
         
-        Uses Beta(2, 8) prior (mean 20% raise frequency, 10 observation equivalent).
-        Returns estimated opponent raise frequency in [0, 1].
+        Uses Beta priors:
+        - Preflop: Beta(2.5, 7.5) (prior mean 25% raise frequency)
+        - Postflop: Beta(1.5, 8.5) (prior mean 15% raise frequency)
+        Separate street tracking prevents preflop aggression from distorting river ranges.
         """
         if not isinstance(memory, dict):
-            return 0.20
+            return 0.25, 0.15
 
         # Track hand number to avoid double counting actions in the same hand
         hand_idx = getattr(obs, "hand_index", 0)
@@ -49,31 +51,43 @@ class RangeAwarePolicy:
             memory["_seen_action_indices"] = set()
 
         seen_indices = memory.setdefault("_seen_action_indices", set())
-        opp_acts = memory.setdefault("opp_actions_total", 0)
-        opp_raises = memory.setdefault("opp_raises_total", 0)
+        pf_acts = memory.setdefault("pf_opp_actions", 0)
+        pf_raises = memory.setdefault("pf_opp_raises", 0)
+        post_acts = memory.setdefault("post_opp_actions", 0)
+        post_raises = memory.setdefault("post_opp_raises", 0)
 
         for i, a in enumerate(obs.action_history):
             if not a.is_me and i not in seen_indices:
                 seen_indices.add(i)
-                opp_acts += 1
-                if a.action in (Action.RAISE_HALF, Action.RAISE_POT):
-                    opp_raises += 1
+                is_raise = (a.action in (Action.RAISE_HALF, Action.RAISE_POT))
+                if a.street == Street.PREFLOP:
+                    pf_acts += 1
+                    if is_raise:
+                        pf_raises += 1
+                else:
+                    post_acts += 1
+                    if is_raise:
+                        post_raises += 1
 
-        memory["opp_actions_total"] = opp_acts
-        memory["opp_raises_total"] = opp_raises
+        memory["pf_opp_actions"] = pf_acts
+        memory["pf_opp_raises"] = pf_raises
+        memory["post_opp_actions"] = post_acts
+        memory["post_opp_raises"] = post_raises
 
-        # Bayesian smoothed raise frequency
-        return (opp_raises + 2.0) / (opp_acts + 10.0)
+        pf_rate = (pf_raises + 2.5) / (pf_acts + 10.0)
+        post_rate = (post_raises + 1.5) / (post_acts + 10.0)
+        return pf_rate, post_rate
 
     def _compute_action_conditioned_equity(
         self,
         obs: Observation,
-        opp_raise_rate: float = 0.20,
+        pf_raise_rate: float = 0.25,
+        post_raise_rate: float = 0.15,
         num_samples: int = 80,
     ) -> Tuple[float, float]:
         """Estimate equity against opponent's current range and continuation range.
 
-        Conditions on observed betting actions, smoothly adapted by opponent raise tendency.
+        Conditions on observed betting actions, smoothly adapted by street-specific aggression.
         Returns (equity_vs_current_range, equity_vs_continuation_range).
         """
         hole = obs.hole_cards
@@ -85,19 +99,18 @@ class RangeAwarePolicy:
         opp_pf_raises = sum(1 for a in obs.action_history if not a.is_me and a.street == Street.PREFLOP and a.action in (Action.RAISE_HALF, Action.RAISE_POT))
         opp_re_raised_here = obs.raises_this_street >= 2
 
-        # Maniac factor: how much does the opponent raise above standard 20-25% baseline?
-        # When opp_raise_rate >= 0.65, maniac_factor = 1.0 (pure maniac, treat range as wide)
-        maniac_factor = min(1.0, max(0.0, (opp_raise_rate - 0.22) / 0.40))
+        # Street-specific maniac factors
+        pf_maniac_factor = min(1.0, max(0.0, (pf_raise_rate - 0.25) / 0.35))
+        post_maniac_factor = min(1.0, max(0.0, (post_raise_rate - 0.18) / 0.35))
 
         # Fast path for preflop
         if obs.street == Street.PREFLOP:
             raw_q = preflop_hand_quality(hole)
             if opp_pf_raises >= 2:
-                # Facing re-raise: scale discount by whether opponent is maniac
-                penalty = (1.0 - maniac_factor) * 0.12 + maniac_factor * 0.02
+                penalty = (1.0 - pf_maniac_factor) * 0.12 + pf_maniac_factor * 0.02
                 adj_q = max(0.0, raw_q - penalty)
             elif opp_pf_raises == 1:
-                penalty = (1.0 - maniac_factor) * 0.05 + maniac_factor * 0.01
+                penalty = (1.0 - pf_maniac_factor) * 0.05 + pf_maniac_factor * 0.01
                 adj_q = max(0.0, raw_q - penalty)
             else:
                 adj_q = raw_q
@@ -121,13 +134,11 @@ class RangeAwarePolicy:
             # 1. Preflop aggression weight
             w = 1.0
             if opp_pf_raises >= 1:
-                # Opponent raised preflop: if normal player, weight by hand quality; if maniac, weight uniformly
                 pf_w = (pf_q + 0.15)
-                w *= ((1.0 - maniac_factor) * pf_w + maniac_factor * 1.0)
+                w *= ((1.0 - pf_maniac_factor) * pf_w + pf_maniac_factor * 1.0)
 
-            # 2. Postflop action weight
+            # 2. Postflop action weight: conditioned by postflop aggression!
             if opp_re_raised_here:
-                # Facing re-raise on this street
                 if cat >= 6:      # Flush or better
                     w_action = 3.0
                 elif cat >= 4:    # Trips or Full House
@@ -137,7 +148,6 @@ class RangeAwarePolicy:
                 else:             # One Pair or High Card (bluff)
                     w_action = 0.12
             elif obs.to_call > 0:
-                # Facing a single bet
                 if cat >= 4:
                     w_action = 1.8
                 elif cat >= 2:
@@ -145,7 +155,6 @@ class RangeAwarePolicy:
                 else:
                     w_action = 0.35
             else:
-                # Opponent checked to us: less likely to have monsters, but slowplays exist
                 if cat >= 6:
                     w_action = 0.40
                 elif cat <= 2:
@@ -153,8 +162,8 @@ class RangeAwarePolicy:
                 else:
                     w_action = 1.0
 
-            # Smoothly blend with uniform weight (1.0) based on maniac_factor
-            w *= ((1.0 - maniac_factor) * w_action + maniac_factor * 1.0)
+            # Blend with uniform weight based on postflop aggression only
+            w *= ((1.0 - post_maniac_factor) * w_action + post_maniac_factor * 1.0)
 
             candidate_weights.append(max(0.01, w))
             candidate_scores.append(score)
@@ -166,7 +175,7 @@ class RangeAwarePolicy:
         wins = 0.0
         ties = 0.0
 
-        # Continuation range: subset of opponent hands that call a proposed raise
+        # Continuation range
         cont_w_total = 0.0
         cont_wins = 0.0
         cont_ties = 0.0
@@ -177,11 +186,9 @@ class RangeAwarePolicy:
             elif my_score == sc:
                 ties += w
 
-            # Continuation model: hands with Cat >= 2 or better will continue vs raise
             cat = sc >> 20
-            # Maniacs call raises with everything
             base_cont = 0.90 if cat >= 4 else (0.60 if cat >= 2 else 0.10)
-            cont_prob = (1.0 - maniac_factor) * base_cont + maniac_factor * 0.85
+            cont_prob = (1.0 - post_maniac_factor) * base_cont + post_maniac_factor * 0.85
             cont_w = w * cont_prob
             cont_w_total += cont_w
             if my_score > sc:
@@ -195,7 +202,6 @@ class RangeAwarePolicy:
         return eq_current, eq_continue
 
     def choose_action(self, obs: Observation, memory: dict) -> Action:
-        # Check when free and no voluntary raises legal
         if obs.to_call == 0 and Action.RAISE_HALF not in obs.legal_actions:
             return Action.CHECK_CALL
 
@@ -203,11 +209,18 @@ class RangeAwarePolicy:
         street = obs.street
         pot_odds = obs.to_call / max(1, obs.pot + obs.to_call)
 
-        # Update opponent statistics in memory
-        opp_raise_rate = self._update_memory_opp_stats(obs, memory)
+        # Update street-specific opponent statistics in memory
+        pf_rate, post_rate = self._update_memory_opp_stats(obs, memory)
 
         # Get range-conditioned equity
-        eq_current, eq_continue = self._compute_action_conditioned_equity(obs, opp_raise_rate=opp_raise_rate)
+        eq_current, eq_continue = self._compute_action_conditioned_equity(
+            obs, pf_raise_rate=pf_rate, post_raise_rate=post_rate
+        )
+
+        if street == Street.PREFLOP:
+            return self._preflop_action(obs, eq_current, is_btn, pot_odds)
+        else:
+            return self._postflop_action(obs, eq_current, eq_continue, is_btn, pot_odds)
 
         if street == Street.PREFLOP:
             return self._preflop_action(obs, eq_current, is_btn, pot_odds)
@@ -305,16 +318,24 @@ class RangeAwarePolicy:
 
             return Action.FOLD
 
-        # No bet to call (checking)
+        # No bet to call (checking node)
+        # 1. Protected checking: when OOP on flop/turn with monster hand, trap-check 20% to check-raise
+        if not is_btn and obs.street in (Street.FLOP, Street.TURN) and adj_strength > 0.75:
+            if self.rng.random() < 0.20:
+                return Action.CHECK_CALL
+
         if adj_strength > 0.65 and adj_cont > 0.50:
+            if Action.RAISE_POT in obs.legal_actions and Action.RAISE_HALF in obs.legal_actions:
+                # Mixed sizing: mix pot (65%) and half-pot (35%) to eliminate deterministic sizing tells
+                return Action.RAISE_POT if self.rng.random() < 0.65 else Action.RAISE_HALF
             if Action.RAISE_POT in obs.legal_actions:
-                if adj_strength > 0.80:
-                    return Action.RAISE_POT
+                return Action.RAISE_POT
+            if Action.RAISE_HALF in obs.legal_actions:
                 return Action.RAISE_HALF
             return Action.CHECK_CALL
 
         if adj_strength > 0.50 and adj_cont > 0.42:
-            if Action.RAISE_HALF in obs.legal_actions and self.rng.random() < 0.5:
+            if Action.RAISE_HALF in obs.legal_actions and self.rng.random() < 0.50:
                 return Action.RAISE_HALF
             return Action.CHECK_CALL
 
@@ -323,8 +344,11 @@ class RangeAwarePolicy:
                 return Action.RAISE_HALF
             return Action.CHECK_CALL
 
-        # Occasional bluff
-        if adj_strength < 0.20 and Action.RAISE_POT in obs.legal_actions:
+        # Mixed bluffing: mix half and pot
+        if adj_strength < 0.20:
             if self.rng.random() < 0.06:
-                return Action.RAISE_POT
+                if Action.RAISE_POT in obs.legal_actions and self.rng.random() < 0.50:
+                    return Action.RAISE_POT
+                if Action.RAISE_HALF in obs.legal_actions:
+                    return Action.RAISE_HALF
         return Action.CHECK_CALL

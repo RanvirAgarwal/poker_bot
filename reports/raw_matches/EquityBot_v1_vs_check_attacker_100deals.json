@@ -2,13 +2,13 @@
   "candidate": "EquityBot_v1",
   "opponent": "check_attacker",
   "num_deals": 100,
-  "seed": "milestone_c_eval3_check_attacker",
-  "mean_bb": 1.33,
+  "seed": "milestone_d_eval_check_attacker",
+  "mean_bb": -1.23,
   "ci": [
-    -2.4231199489372988,
-    5.0831199489372985
+    -4.966416080263075,
+    2.506416080263075
   ],
-  "std_bb": 19.148571168047443,
+  "std_bb": 19.063347348280995,
   "verdict": "CHOP",
-  "elapsed_seconds": 0.8313090801239014
+  "elapsed_seconds": 0.3866453170776367
 }

@@ -1,0 +1,12 @@
+{
+  "candidate": "RangeAware_v2",
+  "opponent": "trained_response_bot",
+  "deals": 100,
+  "seed": "adv_eval_trained_response_bot",
+  "mean_bb": 2.345,
+  "ci": [
+    -3.4428893324638197,
+    8.13288933246382
+  ],
+  "verdict": "CHOP"
+}

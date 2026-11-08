@@ -194,3 +194,4 @@ While coverage reached 100.0% on held-out deals, CFR performance remains capped 
 - Host Environment: Windows 11, Docker CLI version 29.2.1.
 - Docker Desktop daemon status: Inactive (`open //./pipe/dockerDesktopLinuxEngine: The system cannot find the file specified`).
 - Containerized build check (`tools/check_build.sh` inside `ubuntu:22.04` container): **Outstanding**. All Python unit tests, protocol checks, and local multi-process matches pass without error.
+

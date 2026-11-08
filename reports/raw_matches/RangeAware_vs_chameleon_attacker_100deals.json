@@ -1,0 +1,12 @@
+{
+  "candidate": "RangeAware_v2",
+  "opponent": "chameleon_attacker",
+  "deals": 100,
+  "seed": "adv_eval_chameleon_attacker",
+  "mean_bb": 8.495,
+  "ci": [
+    3.2533486564178293,
+    13.736651343582169
+  ],
+  "verdict": "AGENT1_WIN"
+}

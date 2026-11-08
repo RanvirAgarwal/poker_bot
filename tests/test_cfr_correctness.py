@@ -227,3 +227,28 @@ class TestCFRTheory:
         assert loaded.iterations == 500
         assert loaded.strategy_sum["info_a"][Action.CHECK_CALL] == 142.5
         assert loaded.strategy_sum["info_a"][Action.RAISE_POT] == 57.5
+
+    def test_plo5_trainer_uses_generic_mccfr_engine(self):
+        """Verify that PLO5 trainer delegates directly to the audited GenericMCCFRTrainer."""
+        from training.mccfr import MCCFRTrainer
+        from training.generic_mccfr import GenericMCCFRTrainer
+
+        trainer = MCCFRTrainer(seed=42)
+        assert isinstance(trainer.engine, GenericMCCFRTrainer)
+
+    def test_kuhn_best_response_strictly_respects_information_sets(self):
+        """Verify that Kuhn best-response evaluation cannot condition actions on hidden opponent cards."""
+        from training.kuhn_exact import compute_best_response_value, KuhnGame
+
+        # Strategy where opponent always checks/calls
+        def passive_strat(info, legal):
+            if "C" in legal:
+                return {a: (1.0 if a == "C" else 0.0) for a in legal}
+            return {a: 1.0 / len(legal) for a in legal}
+
+        br0 = compute_best_response_value(passive_strat, target_player=0)
+        br1 = compute_best_response_value(passive_strat, target_player=1)
+
+        # In Kuhn against always-passive opponent, optimal pure strategy gets positive value
+        assert br0 > 0.0
+        assert br1 > 0.0

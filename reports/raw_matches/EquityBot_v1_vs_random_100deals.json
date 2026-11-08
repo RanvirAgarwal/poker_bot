@@ -2,13 +2,13 @@
   "candidate": "EquityBot_v1",
   "opponent": "random",
   "num_deals": 100,
-  "seed": "milestone_c_eval3_random",
-  "mean_bb": 13.785,
+  "seed": "milestone_d_eval_random",
+  "mean_bb": 7.405,
   "ci": [
-    8.478313870486431,
-    19.09168612951357
+    2.5093040903258714,
+    12.300695909674129
   ],
-  "std_bb": 27.074929232212092,
+  "std_bb": 24.97804035548025,
   "verdict": "AGENT1_WIN",
-  "elapsed_seconds": 0.3490183353424072
+  "elapsed_seconds": 0.18284964561462402
 }

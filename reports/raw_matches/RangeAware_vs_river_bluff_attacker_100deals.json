@@ -1,0 +1,12 @@
+{
+  "candidate": "RangeAware_v2",
+  "opponent": "river_bluff_attacker",
+  "deals": 100,
+  "seed": "adv_eval_river_bluff_attacker",
+  "mean_bb": 4.44,
+  "ci": [
+    1.9091417947760303,
+    6.970858205223971
+  ],
+  "verdict": "AGENT1_WIN"
+}

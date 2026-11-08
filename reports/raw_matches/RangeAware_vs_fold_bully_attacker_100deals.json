@@ -1,0 +1,12 @@
+{
+  "candidate": "RangeAware_v2",
+  "opponent": "fold_bully_attacker",
+  "deals": 100,
+  "seed": "adv_eval_fold_bully_attacker",
+  "mean_bb": 3.795,
+  "ci": [
+    0.024785086692635794,
+    7.565214913307364
+  ],
+  "verdict": "AGENT1_WIN"
+}

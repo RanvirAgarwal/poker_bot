@@ -1,0 +1,12 @@
+{
+  "candidate": "RangeAware_v2",
+  "opponent": "street_inversion_attacker",
+  "deals": 100,
+  "seed": "adv_eval_street_inversion_attacker",
+  "mean_bb": 7.11,
+  "ci": [
+    3.000000805328301,
+    11.2199991946717
+  ],
+  "verdict": "AGENT1_WIN"
+}
