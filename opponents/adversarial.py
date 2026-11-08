@@ -350,3 +350,10 @@ ADVERSARIAL_REGISTRY = {
     "trained_response_bot": TrainedResponseBot,
 }
 
+# Register DrawAwareOpponent lazily or directly
+try:
+    from opponents.draw_aware_opponent import DrawAwareOpponent
+    ADVERSARIAL_REGISTRY["draw_aware_opponent"] = DrawAwareOpponent
+except ImportError:
+    pass
+

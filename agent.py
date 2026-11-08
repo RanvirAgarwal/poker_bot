@@ -11,6 +11,7 @@ Run:
 
 import os
 import sys
+import time
 import traceback
 
 # Add starter to path for official modules
@@ -27,17 +28,17 @@ from game import Action, AgentConfig, HandResult, Observation, Street
 warmup()
 
 # Import our strategy modules
+from runtime.draw_aware_policy import DrawAwarePolicy
 from runtime.range_aware_policy import RangeAwarePolicy
 from runtime.policy import HeuristicPolicy  # Preserved rollback policy (EquityBot_v1)
 from runtime.opponent import OpponentModel
 
 PARTICIPANT = "TeamAntigravity"
-AGENT_NAME = "RangeAware_v2"
+AGENT_NAME = "DrawAware_v1"
 
-# Promoted Candidate: RangeAware_v2 (100% win rate across 5-seed critical benchmarks,
-# undefeated 9.5/12.0 in complete 12-opponent suite, verified in official HTTP matches)
-# Rollback: set _POLICY = HeuristicPolicy(aggression=1.0, seed=42)
-_POLICY = RangeAwarePolicy(aggression=1.0, seed=42)
+# Active Candidate: DrawAware_v1 (addresses F1 draw-blindness with joint deal sampling)
+# Rollback: set _POLICY = RangeAwarePolicy(aggression=1.0, seed=42) or HeuristicPolicy(aggression=1.0, seed=42)
+_POLICY = DrawAwarePolicy(aggression=1.0, seed=42)
 
 
 # ===== YOUR CODE HERE =====
@@ -64,6 +65,14 @@ def new_half(config: AgentConfig, memory: dict) -> None:
     memory["my_net_total"] = 0
     memory["errors"] = 0
 
+    # F7 fix: internal exception/fallback counters (distinct from judge-counted errors)
+    # Zero judge errors does NOT mean zero caught internal exceptions.
+    memory["_internal_exceptions"] = 0
+    memory["_illegal_action_fallbacks"] = 0
+
+    # F8 fix: track charged time bank across complete POST requests (including parsing, callbacks, serialization)
+    memory["_charged_bank_spent"] = 0.0
+
 
 def choose_action(obs: Observation, memory: dict) -> Action:
     """Called every time it is your turn. Return one of obs.legal_actions."""
@@ -72,6 +81,8 @@ def choose_action(obs: Observation, memory: dict) -> Action:
 
         # Validate action is legal (safety check)
         if action not in obs.legal_actions:
+            # F7 fix: count illegal action fallbacks separately from judge errors
+            memory["_illegal_action_fallbacks"] = memory.get("_illegal_action_fallbacks", 0) + 1
             # Fallback: check if free, else fold
             if obs.to_call == 0:
                 return Action.CHECK_CALL
@@ -81,6 +92,8 @@ def choose_action(obs: Observation, memory: dict) -> Action:
 
     except Exception:
         # On any error, play safe: check or fold
+        # F7 fix: count internal exceptions separately (zero judge errors ≠ zero caught exceptions)
+        memory["_internal_exceptions"] = memory.get("_internal_exceptions", 0) + 1
         memory["errors"] = memory.get("errors", 0) + 1
         if obs.to_call == 0:
             return Action.CHECK_CALL
@@ -141,7 +154,14 @@ def _deliver_results(raw_results) -> list:
 
 @app.get("/")
 async def info():
-    return {"participant": PARTICIPANT, "agent_name": AGENT_NAME}
+    return {
+        "participant": PARTICIPANT,
+        "agent_name": AGENT_NAME,
+        # F7: expose internal counters so external monitoring can distinguish
+        # judge-counted errors from caught-but-hidden internal exceptions
+        "internal_exceptions": MEMORY.get("_internal_exceptions", 0),
+        "illegal_action_fallbacks": MEMORY.get("_illegal_action_fallbacks", 0),
+    }
 
 
 @app.post("/new-half")
@@ -160,6 +180,7 @@ async def route_new_half(request: Request):
 
 @app.post("/act")
 async def route_act(request: Request):
+    t_start = time.perf_counter()
     body, refused = await _read_request(request, "/act")
     if refused:
         return refused
@@ -175,6 +196,9 @@ async def route_act(request: Request):
         answer = action
     else:
         answer = repr(action)
+    # F8 fix: track exact charged time bank across complete POST request
+    elapsed = time.perf_counter() - t_start
+    MEMORY["_charged_bank_spent"] = MEMORY.get("_charged_bank_spent", 0.0) + max(0.0, elapsed - 0.001)
     return {"action": answer, "hand_end_errors": hand_end_errors}
 
 

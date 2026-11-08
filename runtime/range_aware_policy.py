@@ -223,10 +223,10 @@ class RangeAwarePolicy:
         # Update street-specific opponent statistics in memory
         pf_rate, post_rate = self._update_memory_opp_stats(obs, memory)
 
-        # Dynamic time budgeting to guarantee 0 bank exhaustion
+        # Dynamic time budgeting to guarantee 0 bank exhaustion (F8: check exact full-request charged time)
         eff_samples = self.num_samples
         if isinstance(memory, dict):
-            spent = memory.get("_spent_bank", 0.0)
+            spent = memory.get("_charged_bank_spent", memory.get("_spent_bank", 0.0))
             if spent > 6.0:
                 eff_samples = min(eff_samples, 10)
             elif spent > 4.5:

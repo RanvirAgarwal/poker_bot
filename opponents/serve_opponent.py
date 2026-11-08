@@ -3,6 +3,11 @@ opponents/serve_opponent.py - HTTP server for any baseline opponent.
 
 Usage:
     PORT=5009 OPPONENT_BOT=action_conditioned_range python opponents/serve_opponent.py
+
+Changelog (F3 fix):
+- /new-half now calls bot.new_half(config, MEMORY) if the method exists.
+- /act now delivers batched hand_results before calling choose_action (same semantics as agent.py).
+- /hand-end now calls bot.on_hand_end(result, MEMORY) for each result if the method exists.
 """
 
 from __future__ import annotations
@@ -56,6 +61,19 @@ async def _read_request(request: Request, path: str) -> tuple[dict, JSONResponse
     return body, None
 
 
+def _deliver_results(raw_results) -> list:
+    """Deliver batched hand results to the bot (same pattern as agent.py)."""
+    errors = []
+    for raw in raw_results or []:
+        try:
+            result = HandResult.from_dict(raw)
+            if hasattr(bot, "on_hand_end"):
+                bot.on_hand_end(result, MEMORY)
+        except Exception as exc:
+            errors.append({"error": f"{type(exc).__name__}: {exc}"})
+    return errors
+
+
 @app.get("/")
 async def info():
     return {"participant": PARTICIPANT, "agent_name": AGENT_NAME}
@@ -68,6 +86,16 @@ async def route_new_half(request: Request):
         return refused
     MEMORY.clear()
     STATUS["started"] = True
+    # F3 fix: call bot.new_half if it exists
+    if hasattr(bot, "new_half"):
+        try:
+            config = AgentConfig.from_dict(body.get("config", {}))
+            bot.new_half(config, MEMORY)
+        except Exception as exc:
+            return JSONResponse(
+                {"error": f"bot.new_half failed: {type(exc).__name__}: {exc}"},
+                status_code=500,
+            )
     return {"ok": True}
 
 
@@ -76,11 +104,19 @@ async def route_act(request: Request):
     body, refused = await _read_request(request, "/act")
     if refused:
         return refused
-    obs = Observation.from_dict(body["observation"])
-    action = bot.choose_action(obs, MEMORY)
-    if action not in obs.legal_actions:
-        action = Action.CHECK_CALL if obs.to_call == 0 else Action.FOLD
-    return {"action": action.name, "hand_end_errors": []}
+    # F3 fix: deliver hand_results BEFORE calling choose_action
+    hand_end_errors = _deliver_results(body.get("hand_results"))
+    try:
+        obs = Observation.from_dict(body["observation"])
+        action = bot.choose_action(obs, MEMORY)
+        if action not in obs.legal_actions:
+            action = Action.CHECK_CALL if obs.to_call == 0 else Action.FOLD
+    except Exception as exc:
+        return JSONResponse(
+            {"error": f"{type(exc).__name__}: {exc}", "hand_end_errors": hand_end_errors},
+            status_code=500,
+        )
+    return {"action": action.name, "hand_end_errors": hand_end_errors}
 
 
 @app.post("/hand-end")
@@ -88,7 +124,9 @@ async def route_hand_end(request: Request):
     body, refused = await _read_request(request, "/hand-end")
     if refused:
         return refused
-    return {"ok": True, "hand_end_errors": []}
+    # F3 fix: deliver results via on_hand_end if it exists
+    hand_end_errors = _deliver_results(body.get("results"))
+    return {"ok": True, "hand_end_errors": hand_end_errors}
 
 
 if __name__ == "__main__":

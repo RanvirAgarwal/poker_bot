@@ -212,3 +212,81 @@ def format_local_result(result: LocalMatchResult, name1: str = "agent1", name2: 
     ]
     return "\n".join(lines)
 
+
+def play_local_match_fresh(
+    make_agent1: Callable[[], tuple],
+    make_agent2: Callable[[], tuple],
+    seed: str = "eval_1",
+    num_deals: int = 200,
+    keep_logs: bool = False,
+) -> LocalMatchResult:
+    """Play a complete duplicate match with FRESH policy instances per half.
+
+    This correctly models the real tournament lifecycle where each half is a
+    fresh server process — no RNG state leaks between halves.
+
+    Args:
+        make_agent1: Callable returning (act_fn, end_fn, new_half_fn) for a fresh agent1.
+        make_agent2: Callable returning (act_fn, end_fn, new_half_fn) for a fresh agent2.
+        seed: Match seed string.
+        num_deals: Number of deals per half.
+        keep_logs: Whether to keep per-hand logs.
+
+    Returns:
+        LocalMatchResult with fresh-policy semantics.
+    """
+    warmup()
+    start = time.perf_counter()
+
+    # Half 1: fresh instances for both agents
+    a1_fn1, a1_end1, a1_new1 = make_agent1()
+    a2_fn1, a2_end1, a2_new1 = make_agent2()
+    h1_a1, h1_a2, h1_e1, h1_e2, logs_h1 = play_local_half(
+        a1_fn1, a2_fn1, a1_end1, a2_end1, a1_new1, a2_new1,
+        seed, 1, num_deals, keep_logs=keep_logs,
+    )
+
+    # Half 2: NEW fresh instances (simulates fresh server process)
+    a1_fn2, a1_end2, a1_new2 = make_agent1()
+    a2_fn2, a2_end2, a2_new2 = make_agent2()
+    h2_a1, h2_a2, h2_e1, h2_e2, logs_h2 = play_local_half(
+        a1_fn2, a2_fn2, a1_end2, a2_end2, a1_new2, a2_new2,
+        seed, 2, num_deals, keep_logs=keep_logs,
+    )
+
+    elapsed = time.perf_counter() - start
+
+    # Pair results
+    paired_chips = [h1_a1[d] + h2_a1[d] for d in range(num_deals)]
+    paired_bb = [c / BIG_BLIND for c in paired_chips]
+
+    mean = sum(paired_chips) / BIG_BLIND / num_deals if num_deals else 0.0
+    std = statistics.stdev(paired_bb) if num_deals > 1 else 0.0
+    stderr = std / math.sqrt(num_deals) if num_deals else 0.0
+    ci = (mean - CHOP_Z * stderr, mean + CHOP_Z * stderr)
+
+    if ci[0] > 0:
+        verdict = "AGENT1_WIN"
+    elif ci[1] < 0:
+        verdict = "AGENT2_WIN"
+    else:
+        verdict = "CHOP"
+
+    combined_logs = {"half1": logs_h1, "half2": logs_h2} if keep_logs else None
+
+    return LocalMatchResult(
+        num_deals=num_deals,
+        paired_bb=paired_bb,
+        mean_bb=mean,
+        std_bb=std,
+        stderr_bb=stderr,
+        ci=ci,
+        verdict=verdict,
+        half1_chips=sum(h1_a1),
+        half2_chips=sum(h2_a1),
+        elapsed_seconds=elapsed,
+        agent1_errors=h1_e1 + h2_e1,
+        agent2_errors=h1_e2 + h2_e2,
+        logs=combined_logs,
+    )
+

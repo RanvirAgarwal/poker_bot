@@ -152,18 +152,31 @@ class TestCFRTheory:
     """Mathematical validation tests."""
 
     def test_kuhn_convergence_to_nash(self):
-        """ES-MCCFR must converge to Kuhn Poker Nash equilibrium.
+        """GenericMCCFRTrainer must converge to Kuhn Poker Nash equilibrium on KuhnGame.
+
+        Directly validates the shared, reusable generic ES-MCCFR engine (Lanctot et al. 2009)
+        with reach-weighted strategy accumulation against analytical ground truth.
 
         Theoretical properties:
         1. Player 1 Queen always checks at root ('2:' -> Check prob close to 1.0).
         2. Player 1 Jack facing a bet always folds ('1:CB' -> Fold prob close to 1.0).
         3. Player 2 King facing a bet always calls ('3:B' -> Call prob close to 1.0).
         4. Player 2 Jack facing a bet always folds ('1:B' -> Fold prob close to 1.0).
-        5. Value of the game to Player 1 approaches -1/18 (-0.0556).
+        5. NashConv (exploitability) converges toward 0.
         """
-        trainer = KuhnMCCFR(seed=123)
-        for _ in range(25000):
-            trainer.train_iteration()
+        from training.generic_mccfr import GenericMCCFRTrainer
+        from training.kuhn_exact import KuhnGame, compute_nash_conv
+
+        trainer = GenericMCCFRTrainer(seed=42)
+        deck = [1, 2, 3]
+        rng = random.Random(123)
+
+        for _ in range(15000):
+            rng.shuffle(deck)
+            cards = (deck[0], deck[1])
+            for seat in range(2):
+                trainer.traverse(KuhnGame(cards), traversing_seat=seat)
+            trainer.iterations += 1
 
         # Check Q never bets preflop as P1 (always checks)
         p1_q = trainer.get_average_strategy("2:", ["C", "B"])
@@ -176,6 +189,10 @@ class TestCFRTheory:
         # Check K always calls facing bet as P2
         p2_k_facing_bet = trainer.get_average_strategy("3:B", ["F", "C"])
         assert p2_k_facing_bet["C"] > 0.90, f"P2 with King facing bet should call, got {p2_k_facing_bet}"
+
+        # Check NashConv exploitability is small (< 0.05)
+        nash_conv = compute_nash_conv(trainer.get_average_strategy)
+        assert nash_conv[0] < 0.05, f"Kuhn NashConv should be < 0.05, got {nash_conv[0]}"
 
     def test_zero_sum_utility_sign_integrity(self):
         """Zero-sum payoff invariant must hold at all terminal nodes."""

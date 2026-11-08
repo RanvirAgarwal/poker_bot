@@ -4,11 +4,11 @@
   "match_seed": "agreement_audit_seed_42",
   "num_deals": 10,
   "agent1_seat": 0,
-  "agent1_name": "TeamAntigravity / RangeAware_v2 (http://127.0.0.1:5011)",
+  "agent1_name": "TeamAntigravity / DrawAware_v1 (http://127.0.0.1:5011)",
   "agent2_name": "BaselineSuite / Bot_calling_station (http://127.0.0.1:5012)",
   "total_chips": {
-    "agent1": 72,
-    "agent2": -72
+    "agent1": 100,
+    "agent2": -100
   },
   "agent_stats": {
     "agent1": {
@@ -18,45 +18,45 @@
       "errors": 0,
       "forfeited": false,
       "error_messages": [],
-      "time_seconds": 0.02976,
-      "wall_seconds": 0.064003
+      "time_seconds": 0.038932,
+      "wall_seconds": 0.076244
     },
     "agent2": {
-      "calls": 54,
+      "calls": 53,
       "skipped_calls": 0,
       "timed_out": false,
       "errors": 0,
       "forfeited": false,
       "error_messages": [],
-      "time_seconds": 0.017831,
-      "wall_seconds": 0.043506
+      "time_seconds": 0.010219,
+      "wall_seconds": 0.03803
     }
   },
   "nets_agent1": [
-    80,
-    4,
-    6,
+    72,
+    16,
+    12,
+    -16,
+    -6,
+    48,
+    -18,
     -4,
-    -12,
-    24,
-    -12,
-    -2,
-    -12,
+    -4,
     0
   ],
   "nets_agent2": [
-    -80,
-    -4,
-    -6,
+    -72,
+    -16,
+    -12,
+    16,
+    6,
+    -48,
+    18,
     4,
-    12,
-    -24,
-    12,
-    2,
-    12,
+    4,
     0
   ],
-  "elapsed_seconds": 0.071,
+  "elapsed_seconds": 0.105,
   "logs": [
     {
       "half": 1,
@@ -117,16 +117,16 @@
         {
           "seat": 0,
           "street": "FLOP",
-          "action": "RAISE_POT",
-          "amount": 12,
-          "street_total": 12
+          "action": "RAISE_HALF",
+          "amount": 6,
+          "street_total": 6
         },
         {
           "seat": 1,
           "street": "FLOP",
           "action": "CHECK_CALL",
-          "amount": 12,
-          "street_total": 12
+          "amount": 6,
+          "street_total": 6
         },
         {
           "seat": 1,
@@ -139,15 +139,15 @@
           "seat": 0,
           "street": "TURN",
           "action": "RAISE_HALF",
-          "amount": 18,
-          "street_total": 18
+          "amount": 12,
+          "street_total": 12
         },
         {
           "seat": 1,
           "street": "TURN",
           "action": "CHECK_CALL",
-          "amount": 18,
-          "street_total": 18
+          "amount": 12,
+          "street_total": 12
         },
         {
           "seat": 1,
@@ -160,22 +160,22 @@
           "seat": 0,
           "street": "RIVER",
           "action": "RAISE_POT",
-          "amount": 44,
-          "street_total": 44
+          "amount": 48,
+          "street_total": 48
         },
         {
           "seat": 1,
           "street": "RIVER",
           "action": "CHECK_CALL",
-          "amount": 44,
-          "street_total": 44
+          "amount": 48,
+          "street_total": 48
         }
       ],
-      "pot": 160,
+      "pot": 144,
       "went_to_showdown": true,
       "nets": [
-        80,
-        -80
+        72,
+        -72
       ]
     },
     {
@@ -237,16 +237,16 @@
         {
           "seat": 0,
           "street": "FLOP",
-          "action": "CHECK_CALL",
-          "amount": 0,
-          "street_total": 0
+          "action": "RAISE_HALF",
+          "amount": 4,
+          "street_total": 4
         },
         {
           "seat": 1,
           "street": "FLOP",
           "action": "CHECK_CALL",
-          "amount": 0,
-          "street_total": 0
+          "amount": 4,
+          "street_total": 4
         },
         {
           "seat": 0,
@@ -265,23 +265,23 @@
         {
           "seat": 0,
           "street": "RIVER",
-          "action": "CHECK_CALL",
-          "amount": 0,
-          "street_total": 0
+          "action": "RAISE_HALF",
+          "amount": 8,
+          "street_total": 8
         },
         {
           "seat": 1,
           "street": "RIVER",
           "action": "CHECK_CALL",
-          "amount": 0,
-          "street_total": 0
+          "amount": 8,
+          "street_total": 8
         }
       ],
-      "pot": 8,
+      "pot": 32,
       "went_to_showdown": true,
       "nets": [
-        4,
-        -4
+        16,
+        -16
       ]
     },
     {
@@ -343,9 +343,16 @@
         {
           "seat": 0,
           "street": "FLOP",
+          "action": "RAISE_HALF",
+          "amount": 2,
+          "street_total": 2
+        },
+        {
+          "seat": 1,
+          "street": "FLOP",
           "action": "CHECK_CALL",
-          "amount": 0,
-          "street_total": 0
+          "amount": 2,
+          "street_total": 2
         },
         {
           "seat": 1,
@@ -372,22 +379,22 @@
           "seat": 0,
           "street": "RIVER",
           "action": "RAISE_POT",
-          "amount": 4,
-          "street_total": 4
+          "amount": 8,
+          "street_total": 8
         },
         {
           "seat": 1,
           "street": "RIVER",
           "action": "CHECK_CALL",
-          "amount": 4,
-          "street_total": 4
+          "amount": 8,
+          "street_total": 8
         }
       ],
-      "pot": 12,
+      "pot": 24,
       "went_to_showdown": true,
       "nets": [
-        6,
-        -6
+        12,
+        -12
       ]
     },
     {
@@ -449,30 +456,30 @@
         {
           "seat": 0,
           "street": "FLOP",
-          "action": "CHECK_CALL",
-          "amount": 0,
-          "street_total": 0
+          "action": "RAISE_HALF",
+          "amount": 4,
+          "street_total": 4
         },
         {
           "seat": 1,
           "street": "FLOP",
           "action": "CHECK_CALL",
-          "amount": 0,
-          "street_total": 0
+          "amount": 4,
+          "street_total": 4
         },
         {
           "seat": 0,
           "street": "TURN",
-          "action": "CHECK_CALL",
-          "amount": 0,
-          "street_total": 0
+          "action": "RAISE_HALF",
+          "amount": 8,
+          "street_total": 8
         },
         {
           "seat": 1,
           "street": "TURN",
           "action": "CHECK_CALL",
-          "amount": 0,
-          "street_total": 0
+          "amount": 8,
+          "street_total": 8
         },
         {
           "seat": 0,
@@ -489,11 +496,11 @@
           "street_total": 0
         }
       ],
-      "pot": 8,
+      "pot": 32,
       "went_to_showdown": true,
       "nets": [
-        -4,
-        4
+        -16,
+        16
       ]
     },
     {
@@ -583,23 +590,16 @@
         {
           "seat": 0,
           "street": "RIVER",
-          "action": "RAISE_HALF",
-          "amount": 6,
-          "street_total": 6
-        },
-        {
-          "seat": 1,
-          "street": "RIVER",
           "action": "CHECK_CALL",
-          "amount": 6,
-          "street_total": 6
+          "amount": 0,
+          "street_total": 0
         }
       ],
-      "pot": 24,
+      "pot": 12,
       "went_to_showdown": true,
       "nets": [
-        -12,
-        12
+        -6,
+        6
       ]
     },
     {
@@ -661,51 +661,51 @@
         {
           "seat": 0,
           "street": "FLOP",
-          "action": "CHECK_CALL",
-          "amount": 0,
-          "street_total": 0
+          "action": "RAISE_HALF",
+          "amount": 4,
+          "street_total": 4
         },
         {
           "seat": 1,
           "street": "FLOP",
           "action": "CHECK_CALL",
-          "amount": 0,
-          "street_total": 0
+          "amount": 4,
+          "street_total": 4
         },
         {
           "seat": 0,
           "street": "TURN",
-          "action": "RAISE_POT",
-          "amount": 8,
-          "street_total": 8
-        },
-        {
-          "seat": 1,
-          "street": "TURN",
-          "action": "CHECK_CALL",
-          "amount": 8,
-          "street_total": 8
-        },
-        {
-          "seat": 0,
-          "street": "RIVER",
           "action": "RAISE_HALF",
-          "amount": 12,
-          "street_total": 12
+          "amount": 8,
+          "street_total": 8
+        },
+        {
+          "seat": 1,
+          "street": "TURN",
+          "action": "CHECK_CALL",
+          "amount": 8,
+          "street_total": 8
+        },
+        {
+          "seat": 0,
+          "street": "RIVER",
+          "action": "RAISE_POT",
+          "amount": 32,
+          "street_total": 32
         },
         {
           "seat": 1,
           "street": "RIVER",
           "action": "CHECK_CALL",
-          "amount": 12,
-          "street_total": 12
+          "amount": 32,
+          "street_total": 32
         }
       ],
-      "pot": 48,
+      "pot": 96,
       "went_to_showdown": true,
       "nets": [
-        24,
-        -24
+        48,
+        -48
       ]
     },
     {
@@ -767,16 +767,16 @@
         {
           "seat": 0,
           "street": "FLOP",
-          "action": "RAISE_HALF",
-          "amount": 6,
-          "street_total": 6
+          "action": "RAISE_POT",
+          "amount": 12,
+          "street_total": 12
         },
         {
           "seat": 1,
           "street": "FLOP",
           "action": "CHECK_CALL",
-          "amount": 6,
-          "street_total": 6
+          "amount": 12,
+          "street_total": 12
         },
         {
           "seat": 1,
@@ -807,11 +807,11 @@
           "street_total": 0
         }
       ],
-      "pot": 24,
+      "pot": 36,
       "went_to_showdown": true,
       "nets": [
-        -12,
-        12
+        -18,
+        18
       ]
     },
     {
@@ -894,23 +894,23 @@
         {
           "seat": 0,
           "street": "RIVER",
-          "action": "CHECK_CALL",
-          "amount": 0,
-          "street_total": 0
+          "action": "RAISE_HALF",
+          "amount": 2,
+          "street_total": 2
         },
         {
           "seat": 1,
           "street": "RIVER",
           "action": "CHECK_CALL",
-          "amount": 0,
-          "street_total": 0
+          "amount": 2,
+          "street_total": 2
         }
       ],
-      "pot": 4,
+      "pot": 8,
       "went_to_showdown": true,
       "nets": [
-        -2,
-        2
+        -4,
+        4
       ]
     },
     {
@@ -972,16 +972,16 @@
         {
           "seat": 0,
           "street": "FLOP",
-          "action": "RAISE_POT",
-          "amount": 4,
-          "street_total": 4
+          "action": "RAISE_HALF",
+          "amount": 2,
+          "street_total": 2
         },
         {
           "seat": 1,
           "street": "FLOP",
           "action": "CHECK_CALL",
-          "amount": 4,
-          "street_total": 4
+          "amount": 2,
+          "street_total": 2
         },
         {
           "seat": 1,
@@ -993,16 +993,9 @@
         {
           "seat": 0,
           "street": "TURN",
-          "action": "RAISE_HALF",
-          "amount": 6,
-          "street_total": 6
-        },
-        {
-          "seat": 1,
-          "street": "TURN",
           "action": "CHECK_CALL",
-          "amount": 6,
-          "street_total": 6
+          "amount": 0,
+          "street_total": 0
         },
         {
           "seat": 1,
@@ -1019,11 +1012,11 @@
           "street_total": 0
         }
       ],
-      "pot": 24,
+      "pot": 8,
       "went_to_showdown": true,
       "nets": [
-        -12,
-        12
+        -4,
+        4
       ]
     },
     {
@@ -1085,47 +1078,47 @@
         {
           "seat": 0,
           "street": "FLOP",
-          "action": "CHECK_CALL",
-          "amount": 0,
-          "street_total": 0
+          "action": "RAISE_HALF",
+          "amount": 4,
+          "street_total": 4
         },
         {
           "seat": 1,
           "street": "FLOP",
           "action": "CHECK_CALL",
+          "amount": 4,
+          "street_total": 4
+        },
+        {
+          "seat": 0,
+          "street": "TURN",
+          "action": "CHECK_CALL",
+          "amount": 0,
+          "street_total": 0
+        },
+        {
+          "seat": 1,
+          "street": "TURN",
+          "action": "CHECK_CALL",
           "amount": 0,
           "street_total": 0
         },
         {
           "seat": 0,
-          "street": "TURN",
-          "action": "RAISE_HALF",
-          "amount": 4,
-          "street_total": 4
-        },
-        {
-          "seat": 1,
-          "street": "TURN",
-          "action": "CHECK_CALL",
-          "amount": 4,
-          "street_total": 4
-        },
-        {
-          "seat": 0,
           "street": "RIVER",
-          "action": "RAISE_HALF",
-          "amount": 8,
-          "street_total": 8
+          "action": "RAISE_POT",
+          "amount": 16,
+          "street_total": 16
         },
         {
           "seat": 1,
           "street": "RIVER",
           "action": "CHECK_CALL",
-          "amount": 8,
-          "street_total": 8
+          "amount": 16,
+          "street_total": 16
         }
       ],
-      "pot": 32,
+      "pot": 48,
       "went_to_showdown": true,
       "nets": [
         0,

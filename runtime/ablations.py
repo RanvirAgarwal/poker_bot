@@ -2,12 +2,19 @@
 runtime/ablations.py - Isolated ablation variants of the Range-Aware architecture.
 
 Isolates:
-1. Ablation_EquityOnly: Pure uniform sampling (EquityBot_v1 baseline).
+1. Ablation_EquityOnly: Pure uniform sampling (EquityBot_v1 baseline behavior).
 2. Ablation_RangeOnly: Action conditioning with static prior (no memory adaptation, no continuation filter).
 3. Ablation_RangeAndAdapt: Action conditioning + within-half Bayesian aggression adaptation (no continuation filter).
 4. Ablation_Complete: Complete RangeAware_v2 (Action conditioning + Adaptation + Continuation filter).
 
 All base bet sizes, thresholds, positional adjustments, and RNG seeds are strictly identical.
+
+Changelog (F4 fix):
+- _update_memory_opp_stats returns Tuple[float, float]; was assigned to single variable.
+- _compute_action_conditioned_equity expects (pf_raise_rate, post_raise_rate) kwargs; was called
+  with wrong kwarg name opp_raise_rate.
+- EquityOnly preflop now uses preflop_hand_quality (not hand_strength_sampled which returns 0.5).
+- Experiments re-raise unexpected exceptions instead of silently substituting fallback strategy.
 """
 
 from __future__ import annotations
@@ -45,23 +52,30 @@ class AblationPolicy(RangeAwarePolicy):
         pot_odds = obs.to_call / max(1, obs.pot + obs.to_call)
 
         # 1. Opponent aggression rate
+        # _update_memory_opp_stats returns Tuple[float, float] — unpack both values (F4 fix)
         if self.enable_aggression_adaptation:
-            opp_raise_rate = self._update_memory_opp_stats(obs, memory)
+            pf_rate, post_rate = self._update_memory_opp_stats(obs, memory)
         else:
-            opp_raise_rate = 0.20  # static prior
+            pf_rate, post_rate = 0.20, 0.15  # static prior
 
         # 2. Equity estimation
         if not self.enable_range_conditioning:
-            # Uniform random sampling (EquityBot_v1 behavior)
-            from runtime.features import hand_strength_sampled
-            eq_current = hand_strength_sampled(obs.hole_cards, obs.board, num_samples=80, rng=self.rng)
+            # Uniform sampling with preflop hand quality (EquityBot_v1 behavior)
+            # Note: hand_strength_sampled returns 0.5 preflop (no board); use preflop_hand_quality instead.
+            if obs.street == Street.PREFLOP:
+                eq_current = preflop_hand_quality(obs.hole_cards)
+            else:
+                from runtime.features import hand_strength_sampled
+                eq_current = hand_strength_sampled(obs.hole_cards, obs.board, num_samples=80, rng=self.rng)
             eq_continue = eq_current
         else:
-            eq_current, eq_continue_calc = self._compute_action_conditioned_equity(obs, opp_raise_rate=opp_raise_rate)
+            # F4 fix: pass correct kwarg names pf_raise_rate and post_raise_rate
+            eq_current, eq_continue_calc = self._compute_action_conditioned_equity(
+                obs, pf_raise_rate=pf_rate, post_raise_rate=post_rate
+            )
             eq_continue = eq_continue_calc if self.enable_continuation_filter else eq_current
 
         if street == Street.PREFLOP:
             return self._preflop_action(obs, eq_current, is_btn, pot_odds)
         else:
             return self._postflop_action(obs, eq_current, eq_continue, is_btn, pot_odds)
-

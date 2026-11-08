@@ -93,3 +93,42 @@
 - **Context**: Initial 100-deal ablation suggested a minor chip payoff difference between with-filter and no-filter variants.
 - **Decision**: Conduct an exhaustive 66-match (132,000 hand) duplicate study and retain continuation filtering (`RangeAware_v2_WithFilter`).
 - **Rationale**: `WithFilter` achieved higher tournament points (31.0/33 vs 30.5/33), reduced across-match variance ($\pm 2.82$ vs $\pm 2.99$ BB/deal), and produced decisive gains against strong opponents (+0.421 BB/deal vs size_aware_equity).
+
+## DEC-014: Resolution of Evaluation Integrity Defects (F2, F3, F4)
+- **Date**: 2026-11-08
+- **Status**: Accepted
+- **Context**: Independent code review identified shared RNG state between halves in local matches (F2), missing opponent callbacks in `serve_opponent.py` (F3), and signature mismatch in `ablations.py` (F4).
+- **Decision**: 
+  1. Add `play_local_match_fresh` accepting factory callables to ensure fresh policy instances per half.
+  2. Update `tests/test_harness_agreement.py` to kill and re-spawn fresh subprocesses between halves.
+  3. Wire `new_half`, `choose_action` (with prior `hand_results` delivery), and `on_hand_end` in `serve_opponent.py`.
+  4. Fix parameter names in `AblationPolicy` and re-raise internal exceptions rather than substituting check/fold.
+- **Rationale**: Eliminates evaluation lifecycle distortion and ensures all reported metrics reflect genuine isolated halves matching the tournament judge.
+
+## DEC-015: Joint-Deal Monte Carlo Runout Modeling in DrawAware_v1 (F1)
+- **Date**: 2026-11-08
+- **Status**: Accepted
+- **Context**: `RangeAware_v2` evaluated flop/turn hands strictly on currently visible cards, ignoring remaining board cards. This made monster draws (e.g. As Ks Qh Jh 9c on Ts 8s 6d) appear worthless (0.29% win share) and caused folding against all-ins where true showdown equity was 56.9%.
+- **Decision**: Implement `DrawAwarePolicy` in `runtime/draw_aware_policy.py`. On flop and turn, sample joint deals (5 opponent cards + `5 - len(board)` future runout cards) from the unseen deck. Retain current made-hand score strictly for past-action likelihood weighting (no future card lookahead bias).
+- **Rationale**: Converts catastrophic draw-folding into profitable calls (+9.55 BB/deal gain vs ACR, +4.88 BB/deal vs Inversion in container matches) while maintaining 0.7s bank usage per half.
+
+## DEC-016: Reach-Weighted Strategy Accumulation and Resumable Checkpoints (F5, F6)
+- **Date**: 2026-11-08
+- **Status**: Accepted
+- **Context**: `GenericMCCFRTrainer` accumulated unweighted strategy probabilities in ES-MCCFR (F5), biasing average strategy on asymmetric reach paths. Checkpoints also omitted regrets and RNG state (F6).
+- **Decision**: Weight `strategy_sum` accumulation by player's own reach probability (`reach_prob * strat[a]`), following Lanctot et al. 2009 (Algorithm 2). Serialize `regrets` and `rng_state` in `save_checkpoint`. Validate directly on `KuhnGame`.
+- **Rationale**: Restores theoretical convergence to Nash equilibrium and guarantees deterministic resume capability from any saved checkpoint.
+
+## DEC-017: Comprehensive Request-Level Charged Time Tracking and Internal Instrumentation (F7, F8)
+- **Date**: 2026-11-08
+- **Status**: Accepted
+- **Context**: Internal exception handling hid failures under legal fallbacks, and time-bank tracking omitted HTTP parsing, serialization, and callback delivery overhead.
+- **Decision**: Track `_internal_exceptions` and `_illegal_action_fallbacks` explicitly in `MEMORY` and expose via `GET /`. In `route_act`, measure elapsed time across the entire POST request and accumulate `_charged_bank_spent` using `max(0.0, elapsed - 0.001)`.
+- **Rationale**: Provides transparent telemetry distinguishing judge-counted errors from caught internal exceptions, and eliminates time-bank estimation drift.
+
+## DEC-018: Promotion of DrawAware_v1 as Active Tournament Candidate
+- **Date**: 2026-11-08
+- **Status**: Accepted
+- **Context**: Full-length container tournament matches and head-to-head empirical benchmarks demonstrated decisive strategic superiority of `DrawAware_v1` over `RangeAware_v2`.
+- **Decision**: Promote `DrawAware_v1` as the active release submission in `agent.py`. Preserve `RangeAware_v2` and `EquityBot_v1` as verified fallback candidates.
+- **Rationale**: Outperformed `RangeAware_v2` in container matches (+10.48 vs +0.93 BB/deal vs ACR; +9.44 vs +4.57 BB/deal vs Inversion) and head-to-head matches (+3.62 vs +3.05 BB/deal overall; +0.64 vs +0.05 BB/deal vs independent DrawAwareOpponent) with zero errors and ample bank headroom.
